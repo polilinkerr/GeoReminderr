@@ -1,9 +1,11 @@
 package com.yahoo.berniak.georeminderr;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 public class ReminderDetailsActivity extends Activity {
@@ -146,5 +148,10 @@ public class ReminderDetailsActivity extends Activity {
 
     private void deleteClicked() {
         //TODO: Implemente employee removal
+    }
+
+    public void goToMap (View view){
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
     }
 }
