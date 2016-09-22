@@ -3,4 +3,5 @@
     <string name="new_employee">Nowe Przypomnienie</string>
     <string name="not_available">brak</string>
     <string name="add_action">Dodaj</string>
+    <string name="action_setting">Ustawienia</string>
 </resources>

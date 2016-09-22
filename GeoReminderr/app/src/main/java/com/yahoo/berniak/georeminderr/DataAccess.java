@@ -17,7 +17,7 @@ public abstract class DataAccess {
         context = ctx;
     }
 
-    public abstract List<Reminder> getAllEmployees();
+    public abstract List<Reminder> getAllReminders();
 
     public abstract long insert(Reminder e);
 

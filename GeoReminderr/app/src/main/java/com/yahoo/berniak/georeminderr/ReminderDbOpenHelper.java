@@ -1,5 +1,6 @@
 package com.yahoo.berniak.georeminderr;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -17,18 +18,25 @@ public class ReminderDbOpenHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String sql = "CREATE TABLE emp (_id INTEGER PRIMARY KEY, " + "name TEXT NOT NULL, "
-                + "familyname TEXT NOT NULL, "
-                + "position TEXT NOT NULL, "
-                + "phone TEXT, "
-                + "weblink TEXT); ";
+        String sql = "CREATE TABLE emp (_id INTEGER PRIMARY KEY,title TEXT, description TEXT,latitude REAL, longitude REAL); ";
+
         db.execSQL(sql);
 
-        sql="INSERT INTO emp VALUES (null, 'Przemek', 'Kadela', 'agile coach', '997', 'sabre.pl'); ";
-        db.execSQL(sql);
-        sql="INSERT INTO emp VALUES (null, 'Beata', 'Szydlo', 'premier', '112', 'premier.gov.pl'); ";
-        db.execSQL(sql);
+        //sql = "INSERT INTO emp VALUES (null, 'Uczelnia','Rozmowa z Profesorem', '123','3214'); ";
+        //db.execSQL(sql);
+        //sql = "INSERT INTO emp VALUES (null, 'Dom', Zanuck', 41241, 12); ";
+        //db.execSQL(sql);
+        insertReminder(db, "Uczelnia", "Rozmowa z Profesorem", 23.4, 321.32);
     }
+    private static void insertReminder(SQLiteDatabase db, String name, String description, double latitude, double longitude) {
+        ContentValues ReminderValue = new ContentValues();
+        ReminderValue.put("title", name);
+        ReminderValue.put("description", description);
+        ReminderValue.put("latitude", latitude);
+        ReminderValue.put("longitude", longitude);
+        db.insert("emp", null, ReminderValue);
+    }
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

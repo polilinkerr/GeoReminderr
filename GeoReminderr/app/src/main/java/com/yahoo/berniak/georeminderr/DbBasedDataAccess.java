@@ -22,20 +22,18 @@ public class DbBasedDataAccess extends DataAccess {
 
 
     @Override
-    public List<Reminder> getAllEmployees() {
+    public List<Reminder> getAllReminders() {
         List<Reminder> result = new ArrayList<Reminder>();
         try (Cursor c = database.query("emp", null /* all */,
-                null, null, null, null, "familyname", null)) {
+                null, null, null, null, "_id", null)) {
 
             while (c.moveToNext()) {
                 Reminder e = new Reminder();
                 e.setId(c.getLong(0));
-                e.setName(c.getString(1));
-                e.setFamilyName(c.getString(2));
-                e.setPosition(c.getString(3));
-                e.setPhone(c.getString(4));
-                e.setWebLink(c.getString(5));
-
+                e.setTitle(c.getString(1));
+                e.setDescription(c.getString(2));
+                e.setLatitude(c.getDouble(3));
+                e.setLongitude(c.getDouble(4));
                 result.add(e);
             }
         }
@@ -49,11 +47,10 @@ public class DbBasedDataAccess extends DataAccess {
     @Override
     public long insert(Reminder e) {
         ContentValues cv = new ContentValues();
-        cv.put("name", e.getName());
-        cv.put("familyname", e.getFamilyName());
-        cv.put("position", e.getPosition());
-        cv.put("phone", e.getPhone());
-        cv.put("weblink", e.getWebLink());
+        cv.put("title", e.getTitle());
+        cv.put("description", e.getDescription());
+        cv.put("latitude", e.getLatitude());
+        cv.put("longitude", e.getLongitude());
         long id = database.insert("emp", null, cv);
         e.setId(id);
         return id;
@@ -62,11 +59,11 @@ public class DbBasedDataAccess extends DataAccess {
     @Override
     public void update(Reminder e) {
         ContentValues cv = new ContentValues();
-        cv.put("name", e.getName());
-        cv.put("familyname", e.getFamilyName());
-        cv.put("position", e.getPosition());
-        cv.put("phone", e.getPhone());
-        cv.put("weblink", e.getWebLink());
+        cv.put("title", e.getTitle());
+        cv.put("description", e.getDescription());
+        cv.put("latitude", e.getLatitude());
+        cv.put("longitude", e.getLongitude());
+
 
         database.update("emp", cv, "_id="+e.getId(), null);
     }
@@ -80,16 +77,16 @@ public class DbBasedDataAccess extends DataAccess {
     @Override
     public Reminder getById(long id) {
         try (Cursor c = database.query("emp", null /* all */,
-                "_id=" + id, null, null, null, "familyname", null)) {
+                "_id=" + id, null, null, null,"_id", null)) {
 
             if (c.moveToNext()) {
                 Reminder e = new Reminder();
                 e.setId(c.getLong(0));
-                e.setName(c.getString(1));
-                e.setFamilyName(c.getString(2));
-                e.setPosition(c.getString(3));
-                e.setPhone(c.getString(4));
-                e.setWebLink(c.getString(5));
+                e.setTitle(c.getString(1));
+                e.setDescription(c.getString(2));
+                e.setLatitude(c.getDouble(3));
+                e.setLongitude(c.getDouble(4));
+
 
                 return e;
             } else {

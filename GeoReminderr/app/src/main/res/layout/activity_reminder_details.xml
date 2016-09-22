@@ -26,49 +26,28 @@
             android:orientation="vertical" >
 
             <EditText
-                android:id="@+id/fieldName"
+                android:id="@+id/fieldTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:hint="Name" >
+                android:hint="Title" >
 
                 <requestFocus />
             </EditText>
 
             <EditText
-                android:id="@+id/fieldFamilyName"
+                android:id="@+id/fieldDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:hint="Family Name" />
+                android:hint="Description" />
 
         </LinearLayout>
 
     </LinearLayout>
 
-    <EditText
-        android:id="@+id/fieldPosition"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:ems="10"
-        android:hint="Position" />
 
-    <EditText
-        android:id="@+id/fieldPhone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:ems="10"
-        android:hint="Phone"
-        android:inputType="phone" />
 
-    <EditText
-        android:id="@+id/fieldWebLink"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:ems="10"
-        android:hint="Web Address" />
+
 
 </LinearLayout>

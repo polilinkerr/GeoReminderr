@@ -28,7 +28,7 @@ public class MainActivity extends ListActivity {
 
     private void loadData() {
         DataAccess da = DataAccess.create(this);
-        data = da.getAllEmployees();
+        data = da.getAllReminders();
 
         ArrayAdapter<Reminder> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, data);
 
@@ -46,15 +46,19 @@ public class MainActivity extends ListActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        int id = item.getItemId();
-        if (id == R.id.action_add) {
-            Intent empDetailsIntent = new Intent(this, ReminderDetailsActivity.class);
-            empDetailsIntent.putExtra(ReminderDetailsActivity.EXTRA_MODE, ReminderDetailsActivity.MODE_NEW);
 
-            startActivityForResult(empDetailsIntent, 101);
-            return true;
+        switch (item.getItemId()){
+            case R.id.action_add:
+                Intent empDetailsIntent = new Intent(this, ReminderDetailsActivity.class);
+                empDetailsIntent.putExtra(ReminderDetailsActivity.EXTRA_MODE, ReminderDetailsActivity.MODE_NEW);
+
+                startActivityForResult(empDetailsIntent, 101);
+                return true;
+            case R.id.action_setting:
+                return true;
+            default:
+                return true;
         }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override

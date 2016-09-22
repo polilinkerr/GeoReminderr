@@ -5,67 +5,70 @@ package com.yahoo.berniak.georeminderr;
  */
 public class Reminder {
     private long id;
-    private String name;
-    private String familyName;
-    private String position;
-    private String phone;
-    private String webLink;
+    private String title;
+    private String description;
+    private double latitude;
+    private double longitude;
 
-    Reminder(long id, String name, String familyName, String position, String phone) {
+
+
+    Reminder(long id, String title, String description, double latitude, double longitude) {
         this.id = id;
-        this.name = name;
-        this.familyName = familyName;
-        this.position = position;
-        this.phone = phone;
-        this.webLink = null;
-    }
+        this.title = title;
+        this.description = description;
+        this.latitude = latitude;
+        this.longitude = longitude;
 
-    public String getWebLink() {
-        return webLink;
-    }
 
-    public void setWebLink(String webLink) {
-        this.webLink = webLink;
-    }
-
-    public Reminder() {
 
     }
 
     public long getId() {
         return id;
     }
+
     public void setId(long id) {
         this.id = id;
     }
-    public String getName() {
-        return name;
+
+    public String getTitle() {
+        return title;
     }
-    public void setName(String name) {
-        this.name = name;
+
+    public void setTitle(String title) {
+        this.title = title;
     }
-    public String getFamilyName() {
-        return familyName;
+
+    public String getDescription() {
+        return description;
     }
-    public void setFamilyName(String familyName) {
-        this.familyName = familyName;
+
+    public void setDescription(String description) {
+        this.description = description;
     }
-    public String getPosition() {
-        return position;
+
+    public double getLatitude() {
+        return latitude;
     }
-    public void setPosition(String position) {
-        this.position = position;
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
-    public String getPhone() {
-        return phone;
+
+    public double getLongitude() {
+        return longitude;
     }
-    public void setPhone(String phone) {
-        this.phone = phone;
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
 
+    public Reminder() {
+
+    }
     @Override
     public String toString() {
-        return name + " " + familyName + " (" + position + ")";
+        return title + " " + description + " ("  + ")";
     }
 }
