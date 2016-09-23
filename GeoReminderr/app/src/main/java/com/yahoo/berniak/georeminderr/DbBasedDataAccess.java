@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.widget.CursorAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,5 +96,15 @@ public class DbBasedDataAccess extends DataAccess {
         }
 
     }
+
+    public Cursor getCursor(){
+        Cursor c = database.query("emp", null /* all */,
+                null, null, null, null, "_id", null);
+        return c;
+
+
+
+    }
+
 
 }

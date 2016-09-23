@@ -1,6 +1,7 @@
 package com.yahoo.berniak.georeminderr;
 
 import android.content.Context;
+import android.database.Cursor;
 
 import java.util.List;
 
@@ -30,6 +31,8 @@ public abstract class DataAccess {
     public abstract void delete(long id);
 
     public abstract Reminder getById(long id);
+
+    public abstract Cursor getCursor();
 
 }
 

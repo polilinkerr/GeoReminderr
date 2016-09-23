@@ -2,33 +2,63 @@ package com.yahoo.berniak.georeminderr;
 
 import android.app.ListActivity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
 import android.widget.ListView;
+
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 import java.util.List;
 
-public class MainActivity extends ListActivity {
+public class MainActivity extends ListActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public static final int DATA_RELOAD_NEEDED = 200;
     public static final int SKIP_DATA_RELOAD = 404;
     private List<Reminder> data;
+    GoogleApiClient mGoogleApiClient;
+    private DataAccess dataAccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //loadData();
+        loadData2();
+        buildGoogleApiClient();
 
-        loadData();
+
+    }
+
+    protected void buildGoogleApiClient() {
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
+
     }
 
 
     protected void onStart(){
         super.onStart();
-        loadData();
+        loadData2();
+        mGoogleApiClient.connect();
 
+    }
+    protected void onStop(){
+        mGoogleApiClient.disconnect();
+        super.onStop();
     }
 
 
@@ -42,6 +72,18 @@ public class MainActivity extends ListActivity {
         setListAdapter(adapter);
     }
 
+    private void loadData2() {
+        DataAccess da = DataAccess.create(this);
+        data = da.getAllReminders();
+
+
+        Cursor todoCursor = da.getCursor();
+        ListAdapter adapter = new CustomArrayAdapter(this, todoCursor);
+
+        //ArrayAdapter<Reminder> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, data);
+
+        setListAdapter(adapter);
+    }
 
 
     @Override
@@ -72,7 +114,7 @@ public class MainActivity extends ListActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == DATA_RELOAD_NEEDED) {
-            loadData();
+            loadData2();
         }
 
     }
@@ -88,5 +130,20 @@ public class MainActivity extends ListActivity {
         empDetailsIntent.putExtra(ReminderDetailsActivity.EXTRA_MODE, ReminderDetailsActivity.MODE_VIEW);
 
         startActivity(empDetailsIntent);
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 }

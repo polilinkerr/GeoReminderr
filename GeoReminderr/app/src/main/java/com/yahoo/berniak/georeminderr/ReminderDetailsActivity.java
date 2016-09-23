@@ -1,16 +1,28 @@
 package com.yahoo.berniak.georeminderr;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 public class ReminderDetailsActivity extends Activity {
 
@@ -27,25 +39,34 @@ public class ReminderDetailsActivity extends Activity {
     private DataAccess dataAccess;
     public  static LatLng coordinate = null;
     private TextView textCooridantes;
+    private Button buttonToMap;
+    private float radius = 100;
+    GoogleApiClient mGoogleApiClient;
+    //private List<Geofence> listaGeoPrzypomnien = new List<>();
+
 
     private String mode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        buildGoogleApiClient();
+
         setContentView(R.layout.activity_reminder_details);
 
         titleField = (TextView) findViewById(R.id.fieldTitle);
         descriptionField = (TextView) findViewById(R.id.fieldDescription);
 
         textCooridantes = (TextView) findViewById(R.id.fieldCooridnates);
-
+        buttonToMap = (Button) findViewById(R.id.byttonToMap);
 
         dataAccess = DataAccess.create(this);
 
         mode = getIntent().getStringExtra(EXTRA_MODE);
         if (mode == null) {
             mode = MODE_VIEW;
+
         }
 
         prepareMode();
@@ -54,6 +75,7 @@ public class ReminderDetailsActivity extends Activity {
         }
     }
     protected void onStart(){
+        mGoogleApiClient.connect();
         super.onStart();
         if (!(coordinate ==null)){
             textCooridantes.setText("Location: "+coordinate.latitude+" "+ coordinate.longitude);
@@ -70,6 +92,8 @@ public class ReminderDetailsActivity extends Activity {
         if (e != null) {
             titleField.setText(e.getTitle());
             descriptionField.setText(e.getDescription());
+            changeCoordinate(e.getLatitude(),e.getLongitude());
+            textCooridantes.setText("Location: "+e.getLatitude()+" "+ e.getLongitude());
 
             getActionBar().setTitle(e.getTitle() );
         }
@@ -80,6 +104,7 @@ public class ReminderDetailsActivity extends Activity {
 
         titleField.setEnabled(enabled);
         descriptionField.setEnabled(enabled);
+        buttonToMap.setEnabled(enabled);
 
 
         if (MODE_NEW.equals(mode)) {
@@ -130,10 +155,11 @@ public class ReminderDetailsActivity extends Activity {
         e.setId(getIntent().getLongExtra(EXTRA_EMPLOYEE_ID, -1));
         e.setTitle(titleField.getText().toString());
         e.setDescription(descriptionField.getText().toString());
-        e.setLongitude(404);
-        e.setLatitude(202);
+        e.setLongitude(coordinate.longitude);
+        e.setLatitude(coordinate.latitude);
 
         if (MODE_NEW.equals(mode)) {
+
             dataAccess.insert(e);
             setResult(MainActivity.DATA_RELOAD_NEEDED);
             finish();
@@ -196,4 +222,62 @@ public class ReminderDetailsActivity extends Activity {
     public void setCoordinate(LatLng coordinate) {
         this.coordinate = coordinate;
     }
+    private void changeCoordinate(double lat, double lng){
+        LatLng tmp = new LatLng(lat, lng);
+        this.setCoordinate(tmp);
+
+    }
+
+    protected void buildGoogleApiClient() {
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks((GoogleApiClient.ConnectionCallbacks) this)
+                    .addOnConnectionFailedListener((GoogleApiClient.OnConnectionFailedListener) this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
+    }
+
+    protected void onStop() {
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
+
+    private void rozglaszajMnie(Reminder e){
+        String requestId = e.getTitle();
+        String arr[] = requestId.split(" ", 2);
+        String firstWord = arr[0];
+
+        Geofence.Builder geofence = new Geofence.Builder();
+        geofence.setCircularRegion(e.getLatitude(),e.getLongitude(),radius);
+        geofence.setRequestId(firstWord);
+        geofence.setExpirationDuration(Geofence.NEVER_EXPIRE);
+        geofence.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL);
+        geofence.build();
+
+    }
+
+    private GeofencingRequest getGeofencingRequest( Geofence geofence ) {
+        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
+        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+        builder.addGeofence(geofence);
+        return builder.build();
+    }
+
+    private PendingIntent getGeofencePendingIntent() {
+        // Reuse the PendingIntent if we already have it.
+        if (mGeofencePendingIntent != null) {
+            return mGeofencePendingIntent;
+        }
+        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
+        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when
+        // calling addGeofences() and removeGeofences().
+        return PendingIntent.getService(this, 0, intent, PendingIntent.
+                FLAG_UPDATE_CURRENT);
+    }
+
+    public void addGeoreminder(){
+
+    }
+
 }

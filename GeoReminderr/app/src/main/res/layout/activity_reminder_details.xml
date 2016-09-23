@@ -10,15 +10,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".ReminderDetailsActivity" >
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
 
-        <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="72dp"
-            android:layout_height="77dp"
-            android:src="@drawable/employee" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -42,6 +34,7 @@
                 android:ems="10"
                 android:hint="Description" />
             <Button
+                android:id="@+id/byttonToMap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/buttonToMap"
@@ -58,7 +51,7 @@
         </LinearLayout>
 
 
-    </LinearLayout>
+
 
 
 
