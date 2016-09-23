@@ -8,6 +8,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +46,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
 
+
+
     }
 
 
@@ -66,6 +70,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mMap.setOnMyLocationButtonClickListener(this);
         enableMyLocation();
+    }
+
+
+    public  boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.maps_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+    public  boolean onOptionsItemSelected(MenuItem item){
+        switch (item.getItemId()){
+            case R.id.action_back:
+                //saveData();
+                ReminderDetailsActivity.coordinate = this.coordinates;
+                //setResult(MainActivity.SKIP_DATA_RELOAD);
+                finish();
+                return true;
+            default:
+                return true;
+        }
+
     }
 
 

@@ -8,6 +8,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.LatLng;
+
+import java.io.IOException;
+
 public class ReminderDetailsActivity extends Activity {
 
 
@@ -21,6 +25,8 @@ public class ReminderDetailsActivity extends Activity {
     private TextView titleField = null;
     private TextView descriptionField = null;
     private DataAccess dataAccess;
+    public  static LatLng coordinate = null;
+    private TextView textCooridantes;
 
     private String mode;
 
@@ -31,6 +37,10 @@ public class ReminderDetailsActivity extends Activity {
 
         titleField = (TextView) findViewById(R.id.fieldTitle);
         descriptionField = (TextView) findViewById(R.id.fieldDescription);
+
+        textCooridantes = (TextView) findViewById(R.id.fieldCooridnates);
+
+
         dataAccess = DataAccess.create(this);
 
         mode = getIntent().getStringExtra(EXTRA_MODE);
@@ -42,6 +52,15 @@ public class ReminderDetailsActivity extends Activity {
         if (MODE_VIEW.equals(mode)) {
             loadData();
         }
+    }
+    protected void onStart(){
+        super.onStart();
+        if (!(coordinate ==null)){
+            textCooridantes.setText("Location: "+coordinate.latitude+" "+ coordinate.longitude);
+        }
+
+
+
     }
 
 
@@ -168,5 +187,13 @@ public class ReminderDetailsActivity extends Activity {
     public void goToMap (View view){
         Intent intent = new Intent(this, MapsActivity.class);
         startActivity(intent);
+    }
+
+    public LatLng getCoordinate() {
+        return coordinate;
+    }
+
+    public void setCoordinate(LatLng coordinate) {
+        this.coordinate = coordinate;
     }
 }
