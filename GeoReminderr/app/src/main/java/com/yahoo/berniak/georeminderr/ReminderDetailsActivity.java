@@ -42,7 +42,6 @@ public class ReminderDetailsActivity extends Activity {
     private Button buttonToMap;
     private float radius = 100;
     GoogleApiClient mGoogleApiClient;
-    //private List<Geofence> listaGeoPrzypomnien = new List<>();
 
 
     private String mode;
@@ -50,6 +49,7 @@ public class ReminderDetailsActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
 
         buildGoogleApiClient();
 
@@ -162,9 +162,14 @@ public class ReminderDetailsActivity extends Activity {
 
             dataAccess.insert(e);
             setResult(MainActivity.DATA_RELOAD_NEEDED);
+            //////
+            createFence(e);
+
+
             finish();
         }else if (MODE_EDIT.equals(mode) ) {
             dataAccess.update(e);
+            createFence(e);
             setResult(MainActivity.DATA_RELOAD_NEEDED);
             mode = MODE_VIEW;
 
@@ -243,7 +248,8 @@ public class ReminderDetailsActivity extends Activity {
         super.onStop();
     }
 
-    private void rozglaszajMnie(Reminder e){
+    private void  createFence(Reminder e){
+
         String requestId = e.getTitle();
         String arr[] = requestId.split(" ", 2);
         String firstWord = arr[0];
@@ -255,26 +261,20 @@ public class ReminderDetailsActivity extends Activity {
         geofence.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL);
         geofence.build();
 
+        Geofence geofencee = geofence.build();
+
+        getGeofencingRequest(geofencee);
+
     }
 
-    private GeofencingRequest getGeofencingRequest( Geofence geofence ) {
+    private GeofencingRequest getGeofencingRequest(Geofence geofence ) {
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
         builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
         builder.addGeofence(geofence);
         return builder.build();
     }
 
-    private PendingIntent getGeofencePendingIntent() {
-        // Reuse the PendingIntent if we already have it.
-        if (mGeofencePendingIntent != null) {
-            return mGeofencePendingIntent;
-        }
-        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
-        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when
-        // calling addGeofences() and removeGeofences().
-        return PendingIntent.getService(this, 0, intent, PendingIntent.
-                FLAG_UPDATE_CURRENT);
-    }
+
 
     public void addGeoreminder(){
 

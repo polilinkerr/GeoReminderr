@@ -13,4 +13,13 @@
     <string name="move_the_camera">Move the camera</string>
     <string name="ChooseLocation">Wybierz te lokalizacje</string>
     <string name="location">Lokalizacja</string>
+    <string name="geofence_not_available">Geofence service is not available now</string>
+    <string name="geofence_too_many_geofences">Your app has registered too many geofences</string>
+    <string name="geofence_too_many_pending_intents">You have provided too many PendingIntents to the addGeofences() call</string>
+    <string name="unknown_geofence_error">nknown error: the Geofence service is not available now</string>
+    <string name="geofence_transition_entered">ENTERED</string>
+    <string name="geofence_transition_exited">EXITED</string>
+    <string name="unknown_geofence_transition">Unknown Transition</string>
+    <string name="geofence_transition_notification_text">Geofence transition error: invalid transition type %1$d</string>
+    <string name="geofence_transition_invalid_type">Geofence transition error: invalid transition type %1$d</string>
 </resources>

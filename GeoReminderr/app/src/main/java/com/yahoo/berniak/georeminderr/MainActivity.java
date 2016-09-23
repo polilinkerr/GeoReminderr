@@ -1,7 +1,9 @@
 package com.yahoo.berniak.georeminderr;
 
 import android.app.ListActivity;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,23 +12,35 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.LocationServices;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends ListActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends ListActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
 
     public static final int DATA_RELOAD_NEEDED = 200;
     public static final int SKIP_DATA_RELOAD = 404;
     private List<Reminder> data;
-    GoogleApiClient mGoogleApiClient;
     private DataAccess dataAccess;
+
+
+    protected static final String TAG = "MainActivity";
+    protected GoogleApiClient mGoogleApiClient;
+    protected ArrayList<Geofence> mGeofenceList;
+    private boolean mGeofencesAdded;
+    private PendingIntent mGeofencePendingIntent;
+    private SharedPreferences mSharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,6 +158,11 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onResult(@NonNull Status status) {
 
     }
 }
