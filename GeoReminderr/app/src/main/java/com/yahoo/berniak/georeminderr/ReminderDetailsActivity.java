@@ -44,6 +44,8 @@ public class ReminderDetailsActivity extends Activity {
         }
     }
 
+
+
     private void loadData() {
         Reminder e = dataAccess.getById(getIntent().getLongExtra(EXTRA_EMPLOYEE_ID, -1));
         if (e != null) {
@@ -148,6 +150,19 @@ public class ReminderDetailsActivity extends Activity {
 
     private void deleteClicked() {
         //TODO: Implemente employee removal
+        Reminder e = new Reminder();
+        e.setId(getIntent().getLongExtra(EXTRA_EMPLOYEE_ID, -1));
+        e.setTitle(titleField.getText().toString());
+        e.setDescription(descriptionField.getText().toString());
+        e.setLongitude(404);
+        e.setLatitude(202);
+
+        dataAccess.delete(e.getId());
+        setResult(MainActivity.DATA_RELOAD_NEEDED);
+        loadData();
+        invalidateOptionsMenu();
+        prepareMode();
+        finish();
     }
 
     public void goToMap (View view){

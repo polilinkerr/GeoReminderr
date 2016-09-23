@@ -25,6 +25,13 @@ public class MainActivity extends ListActivity {
     }
 
 
+    protected void onStart(){
+        super.onStart();
+        loadData();
+
+    }
+
+
 
     private void loadData() {
         DataAccess da = DataAccess.create(this);

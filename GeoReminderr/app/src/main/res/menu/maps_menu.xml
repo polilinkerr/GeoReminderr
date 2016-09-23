@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".EmployeeDetails" >
+
+    <item
+        android:id="@+id/action_back"
+        android:title=""
+        android:icon="@drawable/ic_check_circle_black_24dp"
+        android:showAsAction="always"
+     />
+</menu>

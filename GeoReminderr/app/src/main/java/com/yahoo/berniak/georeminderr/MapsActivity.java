@@ -24,23 +24,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean mPermissionDenied = false;
+    private LatLng coordinates = null;
 
     private TextView mTapTextView;
     private TextView mCameraTextView;
     private GoogleMap mMap;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        mTapTextView = (TextView) findViewById(R.id.tap_text);
-        mCameraTextView = (TextView) findViewById(R.id.camera_text);
+        mTapTextView = (TextView) findViewById(R.id.frameViewLocation);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
     }
 
 
@@ -63,8 +66,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mMap.setOnMyLocationButtonClickListener(this);
         enableMyLocation();
-        mCameraTextView.setVisibility(View.INVISIBLE);
-        mTapTextView.setVisibility(View.INVISIBLE);
     }
 
 
@@ -123,20 +124,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onCameraIdle() {
-        mCameraTextView.setText(mMap.getCameraPosition().toString());
+        //mCameraTextView.setText(mMap.getCameraPosition().toString());
     }
 
     @Override
     public void onMapClick(LatLng point) {
         {
-            mTapTextView.setText("tapped, point=" + point);
+            mTapTextView.setText("X:" + point.latitude+" Y:"+ point.longitude);
+            coordinates = point;
 
     }
+
 
 }
 
     @Override
     public void onMapLongClick(LatLng point) {
-        mTapTextView.setText("long pressed, point=" + point);
+        mTapTextView.setText("X:" + point.latitude+" Y:"+ point.longitude);
+        coordinates = point;
     }
 }

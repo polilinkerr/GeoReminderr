@@ -1,39 +1,43 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:id="@+id/layout">
 
 
-
-
-
-<fragment
-    android:id="@+id/map"
-    class="com.google.android.gms.maps.SupportMapFragment"
-    android:name="com.google.android.gms.maps.SupportMapFragment"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-     />
-    <LinearLayout
+    <Button
+        android:id="@+id/buttonSelectedLocalization"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/wallet_bright_foreground_disabled_holo_light"
-        android:orientation="vertical">
+        android:text="@string/ChooseLocation"
 
-        <TextView
-            android:id="@+id/tap_text"
-            android:text="@string/tap_instructions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+        />
+    <TextView
+        android:id="@+id/frameViewLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
-        <TextView
-            android:id="@+id/camera_text"
-            android:text="@string/move_the_camera"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+<FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_weight="3">
 
-    </LinearLayout>
+
+    <fragment
+        android:id="@+id/map"
+        class="com.google.android.gms.maps.SupportMapFragment"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
 
 
 </FrameLayout>
+
+
+
+
+
+
+</LinearLayout>

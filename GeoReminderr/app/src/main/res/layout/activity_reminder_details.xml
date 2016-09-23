@@ -47,6 +47,13 @@
                 android:text="@string/buttonToMap"
                 android:onClick="goToMap"/>
 
+            <TextView
+                android:id="@+id/fieldCooridnates"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                />
+
         </LinearLayout>
 
 
