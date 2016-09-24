@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,13 +15,6 @@ import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
 
 public class ReminderDetailsActivity extends Activity {
 
@@ -37,11 +29,9 @@ public class ReminderDetailsActivity extends Activity {
     private TextView titleField = null;
     private TextView descriptionField = null;
     private DataAccess dataAccess;
-    public  static LatLng coordinate = null;
+    public static LatLng coordinate = null;
     private TextView textCooridantes;
     private Button buttonToMap;
-    private float radius = 100;
-    GoogleApiClient mGoogleApiClient;
 
 
     private String mode;
@@ -51,13 +41,9 @@ public class ReminderDetailsActivity extends Activity {
         super.onCreate(savedInstanceState);
 
 
-        buildGoogleApiClient();
-
         setContentView(R.layout.activity_reminder_details);
-
         titleField = (TextView) findViewById(R.id.fieldTitle);
         descriptionField = (TextView) findViewById(R.id.fieldDescription);
-
         textCooridantes = (TextView) findViewById(R.id.fieldCooridnates);
         buttonToMap = (Button) findViewById(R.id.byttonToMap);
 
@@ -74,17 +60,15 @@ public class ReminderDetailsActivity extends Activity {
             loadData();
         }
     }
-    protected void onStart(){
-        mGoogleApiClient.connect();
+
+    protected void onStart() {
         super.onStart();
-        if (!(coordinate ==null)){
-            textCooridantes.setText("Location: "+coordinate.latitude+" "+ coordinate.longitude);
+        if (!(coordinate == null)) {
+            textCooridantes.setText("Location: " + coordinate.latitude + " " + coordinate.longitude);
         }
 
 
-
     }
-
 
 
     private void loadData() {
@@ -92,10 +76,10 @@ public class ReminderDetailsActivity extends Activity {
         if (e != null) {
             titleField.setText(e.getTitle());
             descriptionField.setText(e.getDescription());
-            changeCoordinate(e.getLatitude(),e.getLongitude());
-            textCooridantes.setText("Location: "+e.getLatitude()+" "+ e.getLongitude());
+            changeCoordinate(e.getLatitude(), e.getLongitude());
+            textCooridantes.setText("Location: " + e.getLatitude() + " " + e.getLongitude());
 
-            getActionBar().setTitle(e.getTitle() );
+            getActionBar().setTitle(e.getTitle());
         }
     }
 
@@ -127,7 +111,9 @@ public class ReminderDetailsActivity extends Activity {
         menu.findItem(R.id.action_cancel).setVisible(!MODE_VIEW.equals(mode));
 
         return true;
-    };
+    }
+
+    ;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -162,14 +148,9 @@ public class ReminderDetailsActivity extends Activity {
 
             dataAccess.insert(e);
             setResult(MainActivity.DATA_RELOAD_NEEDED);
-            //////
-            createFence(e);
-
-
             finish();
-        }else if (MODE_EDIT.equals(mode) ) {
+        } else if (MODE_EDIT.equals(mode)) {
             dataAccess.update(e);
-            createFence(e);
             setResult(MainActivity.DATA_RELOAD_NEEDED);
             mode = MODE_VIEW;
 
@@ -183,7 +164,7 @@ public class ReminderDetailsActivity extends Activity {
         if (MODE_NEW.equals(mode)) {
             setResult(MainActivity.SKIP_DATA_RELOAD);
             finish();
-        } else if (MODE_EDIT.equals(mode) ) {
+        } else if (MODE_EDIT.equals(mode)) {
             mode = MODE_VIEW;
 
             loadData();
@@ -215,69 +196,21 @@ public class ReminderDetailsActivity extends Activity {
         finish();
     }
 
-    public void goToMap (View view){
+    public void goToMap(View view) {
         Intent intent = new Intent(this, MapsActivity.class);
         startActivity(intent);
-    }
-
-    public LatLng getCoordinate() {
-        return coordinate;
     }
 
     public void setCoordinate(LatLng coordinate) {
         this.coordinate = coordinate;
     }
-    private void changeCoordinate(double lat, double lng){
+
+    private void changeCoordinate(double lat, double lng) {
         LatLng tmp = new LatLng(lat, lng);
         this.setCoordinate(tmp);
-
-    }
-
-    protected void buildGoogleApiClient() {
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addConnectionCallbacks((GoogleApiClient.ConnectionCallbacks) this)
-                    .addOnConnectionFailedListener((GoogleApiClient.OnConnectionFailedListener) this)
-                    .addApi(LocationServices.API)
-                    .build();
-        }
     }
 
     protected void onStop() {
-        mGoogleApiClient.disconnect();
         super.onStop();
     }
-
-    private void  createFence(Reminder e){
-
-        String requestId = e.getTitle();
-        String arr[] = requestId.split(" ", 2);
-        String firstWord = arr[0];
-
-        Geofence.Builder geofence = new Geofence.Builder();
-        geofence.setCircularRegion(e.getLatitude(),e.getLongitude(),radius);
-        geofence.setRequestId(firstWord);
-        geofence.setExpirationDuration(Geofence.NEVER_EXPIRE);
-        geofence.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL);
-        geofence.build();
-
-        Geofence geofencee = geofence.build();
-
-        getGeofencingRequest(geofencee);
-
-    }
-
-    private GeofencingRequest getGeofencingRequest(Geofence geofence ) {
-        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-        builder.addGeofence(geofence);
-        return builder.build();
-    }
-
-
-
-    public void addGeoreminder(){
-
-    }
-
 }

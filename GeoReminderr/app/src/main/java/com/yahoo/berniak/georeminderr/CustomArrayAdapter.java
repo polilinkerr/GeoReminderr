@@ -13,12 +13,14 @@ import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 
+import java.util.Random;
+
 
 /**
  * Created by krzysztofberniak on 23.09.16.
  */
 public class CustomArrayAdapter extends CursorAdapter {
-    private Activity activity;
+
     public CustomArrayAdapter(Context context, Cursor cursor) {
         super(context, cursor, 0);
     }
@@ -30,6 +32,7 @@ public class CustomArrayAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+
         TextView apptitle = (TextView) view.findViewById(R.id.appTitle);
         TextView appdescription = (TextView) view.findViewById(R.id.appDescription);
         TextView appcoordinates = (TextView) view.findViewById(R.id.appCoordinates);
@@ -42,10 +45,13 @@ public class CustomArrayAdapter extends CursorAdapter {
         appcoordinates.setText("X:"+latitude+" Y:"+longitude);
 
         String letter = titlee.substring(0,1);
-        TextDrawable drawable = TextDrawable.builder().buildRound(letter, Color.BLUE);
+        Random rnd = new Random();
+        int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+        TextDrawable drawable = TextDrawable.builder().buildRound(letter, color);
 
 
         IconFirstLetter.setImageDrawable(drawable);
+
 
 
 

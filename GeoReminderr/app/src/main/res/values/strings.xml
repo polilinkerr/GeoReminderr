@@ -22,4 +22,7 @@
     <string name="unknown_geofence_transition">Unknown Transition</string>
     <string name="geofence_transition_notification_text">Geofence transition error: invalid transition type %1$d</string>
     <string name="geofence_transition_invalid_type">Geofence transition error: invalid transition type %1$d</string>
+    <string name="geofences_added">geofences added</string>
+    <string name="geofences_removed">Geofences removed</string>
+    <string name="not_connected">GoogleApiClient no yet connected. Try again.</string>
 </resources>
