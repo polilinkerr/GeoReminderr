@@ -97,6 +97,12 @@ public class DbBasedDataAccess extends DataAccess {
 
     }
 
+    public Cursor getbyIdElements(String dbField, String fieldValue){
+        String Query = "Select * from " + "emp" + " where " + dbField + " = " + fieldValue;
+        Cursor c = database.rawQuery(Query,null);
+        return c;
+    }
+
     public Cursor getCursor(){
         Cursor c = database.query("emp", null /* all */,
                 null, null, null, null, "_id", null);
@@ -105,6 +111,7 @@ public class DbBasedDataAccess extends DataAccess {
 
 
     }
+
 
 
 }

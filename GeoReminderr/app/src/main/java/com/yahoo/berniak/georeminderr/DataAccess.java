@@ -34,6 +34,8 @@ public abstract class DataAccess {
 
     public abstract Cursor getCursor();
 
+    public abstract Cursor getbyIdElements(String dbField, String fieldValue);
+
 }
 
 

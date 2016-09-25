@@ -4,14 +4,6 @@
     android:orientation="vertical"
     android:id="@+id/layout">
 
-
-    <Button
-        android:id="@+id/buttonSelectedLocalization"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/ChooseLocation"
-
-        />
     <TextView
         android:id="@+id/frameViewLocation"
         android:layout_width="match_parent"

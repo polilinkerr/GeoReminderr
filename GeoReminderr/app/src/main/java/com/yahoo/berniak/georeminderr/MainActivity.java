@@ -1,12 +1,19 @@
 package com.yahoo.berniak.georeminderr;
 
+import android.*;
+import android.Manifest;
 import android.app.ListActivity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.Location;
 import android.os.Bundle;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,18 +30,24 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
-public class MainActivity extends ListActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
+public class MainActivity extends ListActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>, LocationListener {
 
     public static final int DATA_RELOAD_NEEDED = 200;
     public static final int SKIP_DATA_RELOAD = 404;
     private List<Reminder> data;
+    private Map<String,LatLng> referenceGeofence = new HashMap<String, LatLng>();
     private DataAccess dataAccess;
 
 
@@ -52,11 +65,14 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
             GEOFENCE_EXPIRATION_IN_HOURS * 60 * 60 * 1000;
     public static final float GEOFENCE_RADIUS_IN_METERS = 1609; // 1 mile, 1.6 km
 
+    private static final long GEO_DURATION = 60 * 60 * 1000;
+    //private static final String GEOFENCE_REQ_ID = "My Geofe;nce"
+    private static final float GEOFENCE_RADIUS = 100.0f; // in meters
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //loadData();
         buildGoogleApiClient();
         //loadData2();
         mGeofenceList = new ArrayList<Geofence>();
@@ -66,24 +82,26 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
                 MODE_PRIVATE);
         mGeofencesAdded = mSharedPreferences.getBoolean(GEOFENCES_ADDED_KEY, false);
 
-        addGeofencesHandler();
+        //addGeofencesHandler();
         buildGoogleApiClient();
+        loadReferenceGeofence();
     }
 
     protected void onStart() {
         super.onStart();
         loadData2();
-        removeGeofencesHandler();
-        loadGeofenceList();
-        addGeofencesHandler();
+        loadReferenceGeofence();
+
         mGoogleApiClient.connect();
+        loadGeofenceList();
 
 
     }
 
     protected void onStop() {
-        mGoogleApiClient.disconnect();
+
         super.onStop();
+        mGoogleApiClient.disconnect();
     }
 
 
@@ -100,12 +118,8 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         DataAccess da = DataAccess.create(this);
         data = da.getAllReminders();
 
-
         Cursor todoCursor = da.getCursor();
         ListAdapter adapter = new CustomArrayAdapter(this, todoCursor);
-
-
-
 
         setListAdapter(adapter);
     }
@@ -159,20 +173,23 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
 
 
     protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
+        Log.d(TAG, "createGoogleApi()");
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+
+        }
     }
 
-
-    public void onConnected(Bundle connectionHint) {
+    public void onConnected(@Nullable Bundle connectionHint) {
         Log.i(TAG, "Connected to GoogleApiClient");
     }
 
     @Override
-    public void onConnectionFailed(ConnectionResult result) {
+    public void onConnectionFailed(@Nullable ConnectionResult result) {
         // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
         // onConnectionFailed.
         Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
@@ -201,7 +218,7 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         return builder.build();
     }
 
-
+     //DO STAREGO POMYSLU
     public void addGeofence(Reminder e) {
 
         String requestId = e.getTitle();
@@ -310,7 +327,10 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         }
     }
 
+    //DO STAREGO POMYSLU
     private void loadGeofenceList() {
+
+        // DO STAREGO POMYSLU | TERAZ NIE UWZGLENIANY
 
         DataAccess da = DataAccess.create(this);
 
@@ -354,4 +374,127 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         }catch (Exception ignore){}
 
 
-    }}
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+
+    }
+
+
+
+
+
+
+
+    private boolean checkPermission() {
+        Log.d(TAG, "checkPermission()");
+        // Ask for permission if it wasn't granted yet
+        return (ContextCompat.checkSelfPermission(this, String.valueOf(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}))
+                == PackageManager.PERMISSION_GRANTED );
+    }
+
+
+    private Geofence createGeofence( String Geofence_req_Id, LatLng latLng, float radius ) {
+
+        //DO PRZEBUDOWY
+        Log.d(TAG, "createGeofence");
+
+        return new Geofence.Builder()
+                .setRequestId(Geofence_req_Id)
+                .setCircularRegion( latLng.latitude, latLng.longitude, radius)
+                .setExpirationDuration( GEO_DURATION )
+                .setTransitionTypes( Geofence.GEOFENCE_TRANSITION_ENTER
+                        | Geofence.GEOFENCE_TRANSITION_EXIT )
+                .build();
+    }
+
+    // Add the created GeofenceRequest to the device's monitoring list
+    private void addGeofence(GeofencingRequest request) {
+        Log.d(TAG, "addGeofence");
+        if (checkPermission())
+            LocationServices.GeofencingApi.addGeofences(
+                    mGoogleApiClient,
+                    request,
+                    getGeofencePendingIntent()
+            ).setResultCallback(this);
+    }
+
+    // Create a Geofence Request
+    private GeofencingRequest createGeofenceRequest( Geofence geofence ) {
+        Log.d(TAG, "createGeofenceRequest");
+        return new GeofencingRequest.Builder()
+                .setInitialTrigger( GeofencingRequest.INITIAL_TRIGGER_ENTER )
+                .addGeofence( geofence )
+                .build();
+    }
+
+
+
+    private void loadReferenceGeofence(){
+        DataAccess da = DataAccess.create(this);
+        Map<String, LatLng> referenceTmpMap = new HashMap<>();
+
+        if(!referenceGeofence.isEmpty()){referenceTmpMap.putAll(referenceGeofence);}
+
+        try {
+
+            Cursor todoCursor = da.getCursor();
+            try {
+
+                // looping through all rows and adding to list
+                if (todoCursor.moveToFirst()) {
+                    do {
+                        String requestId = todoCursor.getString(todoCursor.getColumnIndexOrThrow("_id"));
+                        double latitude = todoCursor.getDouble(todoCursor.getColumnIndexOrThrow("latitude"));
+                        double longitude = todoCursor.getDouble(todoCursor.getColumnIndexOrThrow("longitude"));
+                        if (!referenceTmpMap.containsKey(requestId)){
+                            Log.v("loadReferenceGeofence", "Wyslij nowe zawolanie");
+                            LatLng latLng = new LatLng(latitude,longitude);
+                            referenceTmpMap.put(requestId,latLng);
+                            //DODAJ ZAWOLANIE
+                            GeofencingRequest geofencingRequest = createGeofenceRequest(createGeofence(requestId,latLng,GEOFENCE_RADIUS));
+                            Log.v("loadReferenceGeofence", "Wyslano nowe zawolanie");
+                            addGeofence(geofencingRequest);
+                        }
+                    } while (todoCursor.moveToNext());
+                }
+
+            } finally {
+                try {
+                    todoCursor.close();
+                } catch (Exception ignore){}
+            }
+        }catch (Exception ignore){}
+
+        for (Map.Entry<String,LatLng> cell: referenceTmpMap.entrySet()){
+            if(!CheckIsDataAlreadyInDBorNot("_id",cell.getKey())){
+                Log.v("loadReferenceGeofence", "Usun zawolanie");
+                referenceTmpMap.remove(cell.getKey());
+                //USUN ODWOLANIE
+            }
+        }
+
+        referenceGeofence.clear();
+        referenceGeofence.putAll(referenceTmpMap);
+    }
+
+    public boolean CheckIsDataAlreadyInDBorNot(String dbfield, String fieldValue) {
+
+        DataAccess da = DataAccess.create(this);
+        data = da.getAllReminders();
+
+
+
+        Cursor todoCursor = da.getbyIdElements(dbfield,fieldValue);
+
+        if(todoCursor.getCount() <= 0){
+            todoCursor.close();
+            return false;
+        }
+        todoCursor.close();
+        return true;
+
+    }
+}
