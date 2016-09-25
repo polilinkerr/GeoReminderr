@@ -1,6 +1,5 @@
 package com.yahoo.berniak.georeminderr;
 
-import android.*;
 import android.Manifest;
 import android.app.ListActivity;
 import android.app.PendingIntent;
@@ -13,12 +12,12 @@ import android.os.Bundle;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -31,23 +30,23 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 public class MainActivity extends ListActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>, LocationListener {
 
     public static final int DATA_RELOAD_NEEDED = 200;
     public static final int SKIP_DATA_RELOAD = 404;
+    private static final int REQ_PERMISSION = 1;
     private List<Reminder> data;
-    private Map<String,LatLng> referenceGeofence = new HashMap<String, LatLng>();
+    private Map<String, LatLng> referenceGeofenceList = new HashMap<String, LatLng>();
     private DataAccess dataAccess;
 
 
@@ -67,36 +66,63 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
 
     private static final long GEO_DURATION = 60 * 60 * 1000;
     //private static final String GEOFENCE_REQ_ID = "My Geofe;nce"
-    private static final float GEOFENCE_RADIUS = 100.0f; // in meters
+    private static final float GEOFENCE_RADIUS = 500.0f; // in meters
+    private Location lastLocation;
+
+    private LocationRequest locationRequest;
+    // Defined in mili seconds.
+    // This number in extremely low, and should be used only for debug
+    private final int UPDATE_INTERVAL = 1000;
+    private final int FASTEST_INTERVAL = 900;
+    private PendingIntent geoFencePendingIntent;
+    private final int GEOFENCE_REQ_CODE = 0;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        buildGoogleApiClient();
-        //loadData2();
-        mGeofenceList = new ArrayList<Geofence>();
-        //loadGeofenceList();
-        mGeofencePendingIntent = null;
-        mSharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME,
-                MODE_PRIVATE);
-        mGeofencesAdded = mSharedPreferences.getBoolean(GEOFENCES_ADDED_KEY, false);
 
-        //addGeofencesHandler();
+
+        // Get the UI widgets.
+       //mAddGeofencesButton = (Button) findViewById(R.id.add_geofences_button);
+        //mRemoveGeofencesButton = (Button) findViewById(R.id.remove_geofences_button);
+
+        // Empty list for storing geofences.
+        mGeofenceList = new ArrayList<Geofence>();
+
+        // Initially set the PendingIntent used in addGeofences() and removeGeofences() to null.
+        mGeofencePendingIntent = null;
+
+        // Retrieve an instance of the SharedPreferences object.
+        mSharedPreferences = getSharedPreferences(Constants.SHARED_PREFERENCES_NAME,
+                MODE_PRIVATE);
+
+        // Get the value of mGeofencesAdded from SharedPreferences. Set to false as a default.
+        mGeofencesAdded = mSharedPreferences.getBoolean(Constants.GEOFENCES_ADDED_KEY, false);
+
+
+        // Get the geofences used. Geofence data is hard coded in this sample.
+
+
+        // Kick off the request to build GoogleApiClient.
+        //loadReferenceGeofenceTEST();
+        //loadReferenceGeofence();
+
         buildGoogleApiClient();
-        loadReferenceGeofence();
     }
 
     protected void onStart() {
         super.onStart();
+        mGoogleApiClient.connect();
         loadData2();
         loadReferenceGeofence();
+        populateGeofenceList();
 
-        mGoogleApiClient.connect();
-        loadGeofenceList();
+        //loadReferenceGeofence();
 
 
     }
+
 
     protected void onStop() {
 
@@ -105,18 +131,10 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
     }
 
 
-    private void loadData() {
-        DataAccess da = DataAccess.create(this);
-        data = da.getAllReminders();
-
-        ArrayAdapter<Reminder> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, data);
-
-        setListAdapter(adapter);
-    }
-
     private void loadData2() {
         DataAccess da = DataAccess.create(this);
         data = da.getAllReminders();
+
 
         Cursor todoCursor = da.getCursor();
         ListAdapter adapter = new CustomArrayAdapter(this, todoCursor);
@@ -142,8 +160,13 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
 
                 startActivityForResult(empDetailsIntent, 101);
                 return true;
-            case R.id.action_setting:
+            case R.id.turnOnReminder:
+                addGeofencesButtonHandler();
                 return true;
+            case R.id.turnOffReminder:
+                removeGeofencesButtonHandler();
+                return  true;
+
             default:
                 return true;
         }
@@ -173,19 +196,23 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
 
 
     protected synchronized void buildGoogleApiClient() {
-        Log.d(TAG, "createGoogleApi()");
+        Log.i(TAG, "H createGoogleApi()");
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .addApi(LocationServices.API)
                     .build();
+            Log.i(TAG, "H created GoogleApi()");
 
+        } else {
+            Log.i(TAG, "H NO createGoogleApi()");
         }
     }
 
     public void onConnected(@Nullable Bundle connectionHint) {
         Log.i(TAG, "Connected to GoogleApiClient");
+        getLastKnownLocation();
     }
 
     @Override
@@ -203,57 +230,245 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         // onConnected() will be called again automatically when the service reconnects
     }
 
-    private GeofencingRequest getGeofencingRequest() {
-        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-
-        // The INITIAL_TRIGGER_ENTER flag indicates that geofencing service should trigger a
-        // GEOFENCE_TRANSITION_ENTER notification when the geofence is added and if the device
-        // is already inside that geofence.
-        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-
-        // Add the geofences to be monitored by geofencing service.
-        builder.addGeofences(mGeofenceList);
-
-        // Return a GeofencingRequest.
-        return builder.build();
-    }
-
-     //DO STAREGO POMYSLU
-    public void addGeofence(Reminder e) {
-
-        String requestId = e.getTitle();
-        String arr[] = requestId.split(" ", 2);
-        String firstWord = arr[0];
-
-        mGeofenceList.add(new Geofence.Builder()
-                .setRequestId(firstWord)
-                .setCircularRegion(
-                        e.getLatitude(),
-                        e.getLongitude(),
-                        GEOFENCE_RADIUS_IN_METERS)
-                .setExpirationDuration(Geofence.NEVER_EXPIRE)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL)
-                .build());
-
-
-
-
+    private void getLastKnownLocation() {
+        Log.d(TAG, "getLastKnownLocation()");
+        if (checkPermission()) {
+            lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            if (lastLocation != null) {
+                Log.i(TAG, "LasKnown location. " +
+                        "Long: " + lastLocation.getLongitude() +
+                        " | Lat: " + lastLocation.getLatitude());
+                writeLastLocation();
+                startLocationUpdates();
+            } else {
+                Log.w(TAG, "No location retrieved yet");
+                startLocationUpdates();
+            }
+        } else askPermission();
     }
 
 
-    private void logSecurityException(SecurityException securityException) {
-        Log.e(TAG, "Invalid location permission. " +
-                "You need to use ACCESS_FINE_LOCATION with geofences", securityException);
-    }
 
+    // Start location Updates
+    private void startLocationUpdates() {
+        Log.i(TAG, "startLocationUpdates()");
+        locationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(UPDATE_INTERVAL)
+                .setFastestInterval(FASTEST_INTERVAL);
+
+        if (checkPermission())
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);
+    }
 
     @Override
+    public void onLocationChanged(Location location) {
+        Log.d(TAG, "onLocationChanged [" + location + "]");
+        lastLocation = location;
+        writeActualLocation(location);
+    }
+
+    // Write location coordinates on UI
+    private void writeActualLocation(Location location) {
+        //Toast.makeText(getApplicationContext(), "X:" + location.getLatitude() + " Y:" + location.getLongitude(), Toast.LENGTH_LONG).show();
+    }
+
+    private void writeLastLocation() {writeActualLocation(lastLocation);}
+
+    // Check for permission to access Location
+    private boolean checkPermission() {
+        Log.d(TAG, "checkPermission()");
+        // Ask for permission if it wasn't granted yet
+        return (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED);
+    }
+
+    // Asks for permission
+    private void askPermission() {
+        Log.d(TAG, "askPermission()");
+        ActivityCompat.requestPermissions(
+                this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                REQ_PERMISSION
+        );
+    }
+
+    // Verify user's response of the permission requested
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.d(TAG, "onRequestPermissionsResult()");
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case REQ_PERMISSION: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted
+                    getLastKnownLocation();
+
+                } else {
+                    // Permission denied
+                    permissionsDenied();
+                }
+                break;
+            }
+        }
+    }
+
+    // App cannot work without the permissions
+    private void permissionsDenied() {
+        Log.w(TAG, "permissionsDenied()");
+    }
+
+    private Geofence createGeofence(String Geofence_req_Id, LatLng latLng, float radius) {
+
+        //DO PRZEBUDOWY
+        Log.d(TAG, "createGeofence");
+
+        return new Geofence.Builder()
+                .setRequestId(Geofence_req_Id)
+                .setCircularRegion(latLng.latitude, latLng.longitude, radius)
+                .setExpirationDuration(GEO_DURATION)
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER
+                        | Geofence.GEOFENCE_TRANSITION_EXIT)
+                .build();
+    }
+
+    // Add the created GeofenceRequest to the device's monitoring list
+    private void addGeofence(GeofencingRequest request) {
+        mGoogleApiClient.connect();
+        Log.d(TAG, "addGeofence");
+
+        Log.d(TAG, "addGeofence");
+        if (checkPermission())
+            LocationServices.GeofencingApi.addGeofences(
+                    mGoogleApiClient,
+                    request,
+                    createGeofencePendingIntent()
+            ).setResultCallback(this);
+
+    }
+    private PendingIntent createGeofencePendingIntent() {
+        Log.d(TAG, "createGeofencePendingIntent");
+        if ( geoFencePendingIntent != null )
+            return geoFencePendingIntent;
+
+        Intent intent = new Intent( this, GeofenceTransitionsIntentService.class);
+        return PendingIntent.getService(
+                this, GEOFENCE_REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT );
+    }
+
+    private void removeGeofence(){
+        Log.d(TAG, "remove Geofence");
+        LocationServices.GeofencingApi.removeGeofences(
+                mGoogleApiClient,
+                getGeofencePendingIntent()
+        ).setResultCallback(this);
+    }
+
+    // Create a Geofence Request
+
+    private GeofencingRequest createGeofenceRequest( Geofence geofence ) {
+        Log.d(TAG, "createGeofenceRequest");
+        return new GeofencingRequest.Builder()
+                .setInitialTrigger( GeofencingRequest.INITIAL_TRIGGER_ENTER )
+                .addGeofence( geofence )
+                .build();
+    }
+
+    private void loadReferenceGeofenceTEST() {
+        Map<String, LatLng> referenceTmpMap = new HashMap<>();
+        referenceTmpMap.put("Pierwsze_Miejsce",new LatLng(50.0,22.0) );
+        referenceTmpMap.put("Drugie_Miejsce", new LatLng(50.0331035,19.9721977));
+        //for (Map.Entry<String,LatLng> cell: referenceTmpMap.entrySet()){
+         //   GeofencingRequest geofencingRequest = createGeofenceRequest(createGeofence(cell.getKey(),cell.getValue(),GEOFENCE_RADIUS));
+          //  Log.v("loadReferenceGeofence", "Wyslano nowe zawolanie");
+           // addGeofence(geofencingRequest);
+
+        //}
+        referenceGeofenceList.clear();
+        referenceGeofenceList.putAll(referenceTmpMap);
+    }
+
+    private void loadReferenceGeofence(){
+        DataAccess da = DataAccess.create(this);
+        Map<String, LatLng> referenceTmpMap = new HashMap<>();
+
+        if(!referenceGeofenceList.isEmpty()){referenceTmpMap.putAll(referenceGeofenceList);}
+
+
+        try {
+
+            Cursor todoCursor = da.getCursor();
+            try {
+
+                // looping through all rows and adding to list
+                if (todoCursor.moveToFirst()) {
+                    do {
+                        String requestId = todoCursor.getString(todoCursor.getColumnIndexOrThrow("title"));
+                        double latitude = todoCursor.getDouble(todoCursor.getColumnIndexOrThrow("latitude"));
+                        double longitude = todoCursor.getDouble(todoCursor.getColumnIndexOrThrow("longitude"));
+                        if (!referenceTmpMap.containsKey(requestId)){
+                            Log.v("loadReferenceGeofence", "Wyslij nowe zawolanie");
+                            LatLng latLng = new LatLng(latitude,longitude);
+                            referenceTmpMap.put(requestId,latLng);
+                        }
+                    } while (todoCursor.moveToNext());
+                }
+
+            } finally {
+                try {
+                    todoCursor.close();
+                } catch (Exception ignore){}
+            }
+        }catch (Exception ignore){}
+
+        for (Map.Entry<String,LatLng> cell: referenceTmpMap.entrySet()){
+            if(!CheckIsDataAlreadyInDBorNot("title",cell.getKey())){
+                Log.v("loadReferenceGeofence", "Usun zawolanie");
+                referenceTmpMap.remove(cell.getKey());
+                //USUN ODWOLANIE
+            }
+        }
+
+        referenceGeofenceList.clear();
+        referenceGeofenceList.putAll(referenceTmpMap);
+    }
+
+    public boolean CheckIsDataAlreadyInDBorNot(String dbfield, String fieldValue) {
+
+        DataAccess da = DataAccess.create(this);
+        data = da.getAllReminders();
+
+
+
+        Cursor todoCursor = da.getbyIdElements(dbfield,fieldValue);
+
+        if(todoCursor.getCount() <= 0){
+            todoCursor.close();
+            return false;
+        }
+        todoCursor.close();
+        return true;
+
+    }
+
+    private PendingIntent getGeofencePendingIntent() {
+        // Reuse the PendingIntent if we already have it.
+        if (mGeofencePendingIntent != null) {
+            return mGeofencePendingIntent;
+        }
+        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
+        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
+        // addGeofences() and removeGeofences().
+        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
     public void onResult(Status status) {
         if (status.isSuccess()) {
             // Update state and save in shared preferences.
             mGeofencesAdded = !mGeofencesAdded;
             SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putBoolean(GEOFENCES_ADDED_KEY, mGeofencesAdded);
+            editor.putBoolean(Constants.GEOFENCES_ADDED_KEY, mGeofencesAdded);
             editor.apply();
 
             // Update the UI. Adding geofences enables the Remove Geofences button, and removing
@@ -274,19 +489,31 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         }
     }
 
-    private PendingIntent getGeofencePendingIntent() {
-        // Reuse the PendingIntent if we already have it.
-        if (mGeofencePendingIntent != null) {
-            return mGeofencePendingIntent;
+    private void logSecurityException(SecurityException securityException) {
+        Log.e(TAG, "Invalid location permission. " +
+                "You need to use ACCESS_FINE_LOCATION with geofences", securityException);
+    }
+
+    public void removeGeofencesButtonHandler() {
+        if (!mGoogleApiClient.isConnected()) {
+            Toast.makeText(this, getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
+            return;
         }
-        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
-        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
-        // addGeofences() and removeGeofences().
-        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        try {
+            // Remove geofences.
+            LocationServices.GeofencingApi.removeGeofences(
+                    mGoogleApiClient,
+                    // This is the same pending intent that was used in addGeofences().
+                    getGeofencePendingIntent()
+            ).setResultCallback(this); // Result processed in onResult().
+        } catch (SecurityException securityException) {
+            // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
+            logSecurityException(securityException);
+        }
     }
 
 
-    public void addGeofencesHandler() {
+    public void addGeofencesButtonHandler() {
         if (!mGoogleApiClient.isConnected()) {
             Toast.makeText(this, getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
             return;
@@ -309,192 +536,53 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         }
     }
 
-    public void removeGeofencesHandler() {
-        if (!mGoogleApiClient.isConnected()) {
-            Toast.makeText(this, getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
-            return;
-        }
-        try {
-            // Remove geofences.
-            LocationServices.GeofencingApi.removeGeofences(
-                    mGoogleApiClient,
-                    // This is the same pending intent that was used in addGeofences().
-                    getGeofencePendingIntent()
-            ).setResultCallback(this); // Result processed in onResult().
-        } catch (SecurityException securityException) {
-            // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
-            logSecurityException(securityException);
-        }
+
+    private GeofencingRequest getGeofencingRequest() {
+        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
+
+        // The INITIAL_TRIGGER_ENTER flag indicates that geofencing service should trigger a
+        // GEOFENCE_TRANSITION_ENTER notification when the geofence is added and if the device
+        // is already inside that geofence.
+        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+
+        // Add the geofences to be monitored by geofencing service.
+        builder.addGeofences(mGeofenceList);
+
+        // Return a GeofencingRequest.
+        return builder.build();
     }
 
-    //DO STAREGO POMYSLU
-    private void loadGeofenceList() {
+    public void populateGeofenceList() {
 
-        // DO STAREGO POMYSLU | TERAZ NIE UWZGLENIANY
+        for (Map.Entry<String, LatLng> entry : referenceGeofenceList.entrySet()) {
 
-        DataAccess da = DataAccess.create(this);
+            //PYTANIE - CZY TO TYLKO DODAJE CZY WCZESNIEJ MAPA JEST CZYSZCZONA
+            mGeofenceList.add(new Geofence.Builder()
+                    // Set the request ID of the geofence. This is a string to identify this
+                    // geofence.
+                    .setRequestId(entry.getKey())
 
+                    // Set the circular region of this geofence.
+                    .setCircularRegion(
+                            entry.getValue().latitude,
+                            entry.getValue().longitude,
+                            Constants.GEOFENCE_RADIUS_IN_METERS
+                    )
 
-        try {
+                    // Set the expiration duration of the geofence. This geofence gets automatically
+                    // removed after this period of time.
+                    .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
 
-            Cursor todoCursor = da.getCursor();
-            try {
+                    // Set the transition types of interest. Alerts are only generated for these
+                    // transition. We track entry and exit transitions in this sample.
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
+                            Geofence.GEOFENCE_TRANSITION_EXIT)
 
-                // looping through all rows and adding to list
-                if (todoCursor.moveToFirst()) {
-                    do {
-                        String requestId = todoCursor.getString(todoCursor.getColumnIndexOrThrow("title"));
-                        String arr[] = requestId.split(" ", 2);
-                        String firstWord = arr[0];
-                        double latitude = todoCursor.getDouble(todoCursor.getColumnIndexOrThrow("latitude"));
-                        double longitude = todoCursor.getDouble(todoCursor.getColumnIndexOrThrow("longitude"));
-
-                        mGeofenceList.add(new Geofence.Builder()
-                                .setRequestId(firstWord)
-                                .setCircularRegion(
-                                        latitude,
-                                        longitude,
-                                        GEOFENCE_RADIUS_IN_METERS)
-                                .setExpirationDuration(Geofence.NEVER_EXPIRE)
-                                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL)
-                                .build());
-                    } while (todoCursor.moveToNext());
-                }
-
-            } finally {
-                try {
-                    todoCursor.close();
-                } catch (Exception ignore){}
-
-
-
-            }
-
-
-        }catch (Exception ignore){}
-
-
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-
-
-    }
-
-
-
-
-
-
-
-    private boolean checkPermission() {
-        Log.d(TAG, "checkPermission()");
-        // Ask for permission if it wasn't granted yet
-        return (ContextCompat.checkSelfPermission(this, String.valueOf(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}))
-                == PackageManager.PERMISSION_GRANTED );
-    }
-
-
-    private Geofence createGeofence( String Geofence_req_Id, LatLng latLng, float radius ) {
-
-        //DO PRZEBUDOWY
-        Log.d(TAG, "createGeofence");
-
-        return new Geofence.Builder()
-                .setRequestId(Geofence_req_Id)
-                .setCircularRegion( latLng.latitude, latLng.longitude, radius)
-                .setExpirationDuration( GEO_DURATION )
-                .setTransitionTypes( Geofence.GEOFENCE_TRANSITION_ENTER
-                        | Geofence.GEOFENCE_TRANSITION_EXIT )
-                .build();
-    }
-
-    // Add the created GeofenceRequest to the device's monitoring list
-    private void addGeofence(GeofencingRequest request) {
-        Log.d(TAG, "addGeofence");
-        if (checkPermission())
-            LocationServices.GeofencingApi.addGeofences(
-                    mGoogleApiClient,
-                    request,
-                    getGeofencePendingIntent()
-            ).setResultCallback(this);
-    }
-
-    // Create a Geofence Request
-    private GeofencingRequest createGeofenceRequest( Geofence geofence ) {
-        Log.d(TAG, "createGeofenceRequest");
-        return new GeofencingRequest.Builder()
-                .setInitialTrigger( GeofencingRequest.INITIAL_TRIGGER_ENTER )
-                .addGeofence( geofence )
-                .build();
-    }
-
-
-
-    private void loadReferenceGeofence(){
-        DataAccess da = DataAccess.create(this);
-        Map<String, LatLng> referenceTmpMap = new HashMap<>();
-
-        if(!referenceGeofence.isEmpty()){referenceTmpMap.putAll(referenceGeofence);}
-
-        try {
-
-            Cursor todoCursor = da.getCursor();
-            try {
-
-                // looping through all rows and adding to list
-                if (todoCursor.moveToFirst()) {
-                    do {
-                        String requestId = todoCursor.getString(todoCursor.getColumnIndexOrThrow("_id"));
-                        double latitude = todoCursor.getDouble(todoCursor.getColumnIndexOrThrow("latitude"));
-                        double longitude = todoCursor.getDouble(todoCursor.getColumnIndexOrThrow("longitude"));
-                        if (!referenceTmpMap.containsKey(requestId)){
-                            Log.v("loadReferenceGeofence", "Wyslij nowe zawolanie");
-                            LatLng latLng = new LatLng(latitude,longitude);
-                            referenceTmpMap.put(requestId,latLng);
-                            //DODAJ ZAWOLANIE
-                            GeofencingRequest geofencingRequest = createGeofenceRequest(createGeofence(requestId,latLng,GEOFENCE_RADIUS));
-                            Log.v("loadReferenceGeofence", "Wyslano nowe zawolanie");
-                            addGeofence(geofencingRequest);
-                        }
-                    } while (todoCursor.moveToNext());
-                }
-
-            } finally {
-                try {
-                    todoCursor.close();
-                } catch (Exception ignore){}
-            }
-        }catch (Exception ignore){}
-
-        for (Map.Entry<String,LatLng> cell: referenceTmpMap.entrySet()){
-            if(!CheckIsDataAlreadyInDBorNot("_id",cell.getKey())){
-                Log.v("loadReferenceGeofence", "Usun zawolanie");
-                referenceTmpMap.remove(cell.getKey());
-                //USUN ODWOLANIE
-            }
+                    // Create the geofence.
+                    .build());
         }
 
-        referenceGeofence.clear();
-        referenceGeofence.putAll(referenceTmpMap);
-    }
-
-    public boolean CheckIsDataAlreadyInDBorNot(String dbfield, String fieldValue) {
-
-        DataAccess da = DataAccess.create(this);
-        data = da.getAllReminders();
+}
 
 
-
-        Cursor todoCursor = da.getbyIdElements(dbfield,fieldValue);
-
-        if(todoCursor.getCount() <= 0){
-            todoCursor.close();
-            return false;
-        }
-        todoCursor.close();
-        return true;
-
-    }
 }

@@ -25,4 +25,6 @@
     <string name="geofences_added">geofences added</string>
     <string name="geofences_removed">Geofences removed</string>
     <string name="not_connected">GoogleApiClient no yet connected. Try again.</string>
+    <string name="action_turnOfReminder">Turn of Reminderr</string>
+    <string name="action_turnOnReminder">Turn On Reminderr</string>
 </resources>
