@@ -1,20 +1,27 @@
 package com.yahoo.berniak.georeminderr;
 
 import android.app.Activity;
-import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
 import android.widget.TextView;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.GeofencingRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 public class ReminderDetailsActivity extends Activity {
 
@@ -29,9 +36,18 @@ public class ReminderDetailsActivity extends Activity {
     private TextView titleField = null;
     private TextView descriptionField = null;
     private DataAccess dataAccess;
+    private Button buttonTakePhoto = null;
+    private ImageView viewImage = null;
     public static LatLng coordinate = null;
+    public static String adress = null;
     private TextView textCooridantes;
     private Button buttonToMap;
+    private ImageView viewPhoto;
+
+    private Uri photoUri;
+    private final static int TAKE_PHOTO = 1;
+    private final static String PHOTO_URI = "photoUri";
+
 
 
     private String mode;
@@ -46,8 +62,26 @@ public class ReminderDetailsActivity extends Activity {
         descriptionField = (TextView) findViewById(R.id.fieldDescription);
         textCooridantes = (TextView) findViewById(R.id.fieldCooridnates);
         buttonToMap = (Button) findViewById(R.id.byttonToMap);
+        viewPhoto = (ImageView) findViewById(R.id.viewImage);
+        viewPhoto.setImageResource(R.mipmap.ic_launcher);
 
         dataAccess = DataAccess.create(this);
+
+        buttonTakePhoto = (Button) findViewById(R.id.buttonTakePhoto);
+        buttonTakePhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                photoUri = getContentResolver().insert(EXTERNAL_CONTENT_URI, new ContentValues());
+                intent.putExtra(MediaStore.EXTRA_OUTPUT,photoUri);
+                startActivityForResult(intent, TAKE_PHOTO);
+            }
+        });
+
+        if (savedInstanceState != null){
+            photoUri = (Uri) savedInstanceState.get(PHOTO_URI);
+
+        }
 
         mode = getIntent().getStringExtra(EXTRA_MODE);
         if (mode == null) {
@@ -59,17 +93,17 @@ public class ReminderDetailsActivity extends Activity {
         if (MODE_VIEW.equals(mode)) {
             loadData();
         }
+
+
+
     }
 
     protected void onStart() {
         super.onStart();
         if (!(coordinate == null)) {
-            textCooridantes.setText("Location: " + coordinate.latitude + " " + coordinate.longitude);
+            textCooridantes.setText("Location: " + HelpCalculation.round(coordinate.latitude,2) + " " + HelpCalculation.round(coordinate.longitude,2)+" adress:"+adress)      ;
         }
-
-
     }
-
 
     private void loadData() {
         Reminder e = dataAccess.getById(getIntent().getLongExtra(EXTRA_EMPLOYEE_ID, -1));
@@ -77,7 +111,7 @@ public class ReminderDetailsActivity extends Activity {
             titleField.setText(e.getTitle());
             descriptionField.setText(e.getDescription());
             changeCoordinate(e.getLatitude(), e.getLongitude());
-            textCooridantes.setText("Location: " + e.getLatitude() + " " + e.getLongitude());
+            textCooridantes.setText("Location: " + HelpCalculation.round(e.getLatitude(),4) + " " + HelpCalculation.round(e.getLongitude(),4)+e.getAdress());
 
             getActionBar().setTitle(e.getTitle());
         }
@@ -89,6 +123,7 @@ public class ReminderDetailsActivity extends Activity {
         titleField.setEnabled(enabled);
         descriptionField.setEnabled(enabled);
         buttonToMap.setEnabled(enabled);
+
 
 
         if (MODE_NEW.equals(mode)) {
@@ -143,6 +178,8 @@ public class ReminderDetailsActivity extends Activity {
         e.setDescription(descriptionField.getText().toString());
         e.setLongitude(coordinate.longitude);
         e.setLatitude(coordinate.latitude);
+        ////
+        e.setAdress(adress);
 
         if (MODE_NEW.equals(mode)) {
 
@@ -187,6 +224,7 @@ public class ReminderDetailsActivity extends Activity {
         e.setDescription(descriptionField.getText().toString());
         e.setLongitude(404);
         e.setLatitude(202);
+        e.setAdress("ul Pokątna");
 
         dataAccess.delete(e.getId());
         setResult(MainActivity.DATA_RELOAD_NEEDED);
@@ -212,5 +250,22 @@ public class ReminderDetailsActivity extends Activity {
 
     protected void onStop() {
         super.onStop();
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode != Activity.RESULT_OK || requestCode != TAKE_PHOTO ){
+            return;
+        }
+
+        try{
+            InputStream inputStream = getContentResolver().openInputStream(photoUri);
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            viewPhoto.setImageBitmap(bitmap);
+        }catch (FileNotFoundException e){
+            Log.e("ReminderDetailsActivity", "FileNotFound",e);
+        }
     }
 }

@@ -3,6 +3,8 @@ package com.yahoo.berniak.georeminderr;
 import android.*;
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.nfc.Tag;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -26,6 +28,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener,GoogleMap.OnMapLongClickListener,GoogleMap.OnCameraIdleListener,GoogleMap.OnMyLocationButtonClickListener,ActivityCompat.OnRequestPermissionsResultCallback, GoogleMap.OnMarkerClickListener {
 
 
@@ -33,10 +40,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private boolean mPermissionDenied = false;
     private Marker geoFenceMarker;
     private LatLng coordinates = null;
-
     private TextView mTapTextView;
-
     private GoogleMap mMap;
+
+    private Geocoder geocoder;
+    private List<Address> addresses = new ArrayList<Address>();
+    private String address;
+    private String city;
+    private String state;
+    private String country;
+    private String postalCode;
+    private String knownName;
 
 
     @Override
@@ -81,6 +95,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             case R.id.action_back:
                 //saveData();
                 ReminderDetailsActivity.coordinate = this.coordinates;
+                ReminderDetailsActivity.adress = "adress:"+address+", city:"+city+", country:"+country;
                 //setResult(MainActivity.SKIP_DATA_RELOAD);
                 finish();
                 return true;
@@ -152,7 +167,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapClick(LatLng point) {
         {
-            mTapTextView.setText("X:" + point.latitude+" Y:"+ point.longitude);
+            mTapTextView.setText("X:" + HelpCalculation.round(point.latitude,4)+" Y:"+ HelpCalculation.round(point.longitude,4));
             coordinates = point;
             float zoom = 14f;
             CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(point, zoom);
@@ -165,7 +180,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onMapLongClick(LatLng point) {
-        mTapTextView.setText("X:" + point.latitude+" Y:"+ point.longitude);
+        locationToAdress(point.latitude,point.longitude);
+        mTapTextView.setText("adress:"+address+", city:"+city+", country:"+country);
         coordinates = point;
         markerForGeofence(point);
     }
@@ -195,4 +211,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         return false;
     }
+
+    public void locationToAdress(double latitude, double longitude ){
+
+        geocoder = new Geocoder(this, Locale.getDefault());
+
+        try {
+            addresses = geocoder.getFromLocation(latitude, longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+        city = addresses.get(0).getLocality();
+        state = addresses.get(0).getAdminArea();
+        country = addresses.get(0).getCountryName();
+        postalCode = addresses.get(0).getPostalCode();
+        knownName = addresses.get(0).getFeatureName();
+
+    }
+
+    
+
 }

@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 
@@ -34,9 +36,11 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -76,11 +80,24 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
     private final int FASTEST_INTERVAL = 900;
     private PendingIntent geoFencePendingIntent;
     private final int GEOFENCE_REQ_CODE = 0;
+    public  static Locale local;
+
+
+    private Geocoder geocoder;
+    private List<Address> addresses = new ArrayList<Address>();
+    private String address;
+    private String city;
+    private String state;
+    private String country;
+    private String postalCode;
+    private String knownName;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        local = Locale.getDefault();
 
 
         // Get the UI widgets.
@@ -90,23 +107,12 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         // Empty list for storing geofences.
         mGeofenceList = new ArrayList<Geofence>();
 
-        // Initially set the PendingIntent used in addGeofences() and removeGeofences() to null.
         mGeofencePendingIntent = null;
 
-        // Retrieve an instance of the SharedPreferences object.
         mSharedPreferences = getSharedPreferences(Constants.SHARED_PREFERENCES_NAME,
                 MODE_PRIVATE);
-
-        // Get the value of mGeofencesAdded from SharedPreferences. Set to false as a default.
         mGeofencesAdded = mSharedPreferences.getBoolean(Constants.GEOFENCES_ADDED_KEY, false);
 
-
-        // Get the geofences used. Geofence data is hard coded in this sample.
-
-
-        // Kick off the request to build GoogleApiClient.
-        //loadReferenceGeofenceTEST();
-        //loadReferenceGeofence();
 
         buildGoogleApiClient();
     }
@@ -117,6 +123,8 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         loadData2();
         loadReferenceGeofence();
         populateGeofenceList();
+
+
 
         //loadReferenceGeofence();
 
@@ -264,13 +272,18 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "onLocationChanged [" + location + "]");
-        lastLocation = location;
-        writeActualLocation(location);
+
+        if(location.distanceTo(lastLocation)>10){
+            lastLocation = location;
+            writeActualLocation(location);
+        }
+
     }
 
     // Write location coordinates on UI
     private void writeActualLocation(Location location) {
-        //Toast.makeText(getApplicationContext(), "X:" + location.getLatitude() + " Y:" + location.getLongitude(), Toast.LENGTH_LONG).show();
+        locationToAdress(location.getLatitude(),location.getLongitude());
+        Toast.makeText(getApplicationContext(), "adress:"+address+", city:"+city, Toast.LENGTH_LONG).show();
     }
 
     private void writeLastLocation() {writeActualLocation(lastLocation);}
@@ -288,7 +301,7 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         Log.d(TAG, "askPermission()");
         ActivityCompat.requestPermissions(
                 this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE},
                 REQ_PERMISSION
         );
     }
@@ -425,7 +438,7 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         for (Map.Entry<String,LatLng> cell: referenceTmpMap.entrySet()){
             if(!CheckIsDataAlreadyInDBorNot("title",cell.getKey())){
                 Log.v("loadReferenceGeofence", "Usun zawolanie");
-                referenceTmpMap.remove(cell.getKey());
+                referenceTmpMap.remove(cell);
                 //USUN ODWOLANIE
             }
         }
@@ -438,9 +451,6 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
 
         DataAccess da = DataAccess.create(this);
         data = da.getAllReminders();
-
-
-
         Cursor todoCursor = da.getbyIdElements(dbfield,fieldValue);
 
         if(todoCursor.getCount() <= 0){
@@ -583,6 +593,28 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         }
 
 }
+
+    public void locationToAdress(double latitude, double longitude ){
+
+        geocoder = new Geocoder(this, Locale.getDefault());
+
+        try {
+            addresses = geocoder.getFromLocation(latitude, longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+        city = addresses.get(0).getLocality();
+        state = addresses.get(0).getAdminArea();
+        country = addresses.get(0).getCountryName();
+        postalCode = addresses.get(0).getPostalCode();
+        knownName = addresses.get(0).getFeatureName();
+
+    }
+
+
+
 
 
 }

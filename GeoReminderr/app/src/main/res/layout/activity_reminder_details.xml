@@ -20,32 +20,45 @@
             <EditText
                 android:id="@+id/fieldTitle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="Title" >
+                android:layout_height="0dp"
 
-                <requestFocus />
+                android:hint="Title"
+                android:layout_weight="1">
             </EditText>
 
             <EditText
                 android:id="@+id/fieldDescription"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="Description" />
+                android:layout_height="0dp"
+
+                android:hint="Description"
+                android:layout_weight="5"/>
             <Button
                 android:id="@+id/byttonToMap"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:text="@string/buttonToMap"
-                android:onClick="goToMap"/>
+                android:onClick="goToMap"
+                android:layout_weight="1"/>
 
             <TextView
                 android:id="@+id/fieldCooridnates"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:text="@string/location"
+                android:layout_weight="1"
 
+                />
+            <Button
+                android:id="@+id/buttonTakePhoto"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/takePicture"
+                />
+            <ImageView
+                android:id="@+id/viewImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 />
 
         </LinearLayout>

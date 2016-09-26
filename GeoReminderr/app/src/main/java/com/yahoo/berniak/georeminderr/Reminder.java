@@ -9,6 +9,7 @@ public class Reminder {
     private String description;
     private double latitude;
     private double longitude;
+    private String adress;
 
 
 
@@ -63,6 +64,13 @@ public class Reminder {
         this.longitude = longitude;
     }
 
+    public String getAdress() {
+        return adress;
+    }
+
+    public void setAdress(String adress) {
+        this.adress = adress;
+    }
 
     public Reminder() {
 

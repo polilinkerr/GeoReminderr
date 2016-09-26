@@ -6,18 +6,23 @@
         android:id="@+id/action_add"
         android:orderInCategory="100"
         android:showAsAction="always"
-        android:icon="@android:drawable/ic_menu_add"
+        android:icon="@drawable/ic_alarm_add_black_24dp"
         android:title="@string/add_action"/>
 
-    <item android:id="@+id/turnOffReminder"
-        android:title="@string/action_turnOfReminder"
-        android:orderInCategory="100"
-        android:showAsAction="never"></item>
 
     <item android:id="@+id/turnOnReminder"
         android:title="@string/action_turnOnReminder"
         android:orderInCategory="100"
-        android:showAsAction="never"></item>
+        android:icon="@drawable/ic_alarm_on_black_24dp"
+        android:showAsAction="always"></item>
+
+    <item android:id="@+id/turnOffReminder"
+        android:title="@string/action_turnOfReminder"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_alarm_off_black_24dp"
+        android:showAsAction="always"></item>
+
+
 
 
 </menu>

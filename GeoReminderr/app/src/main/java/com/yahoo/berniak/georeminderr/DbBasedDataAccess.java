@@ -35,6 +35,7 @@ public class DbBasedDataAccess extends DataAccess {
                 e.setDescription(c.getString(2));
                 e.setLatitude(c.getDouble(3));
                 e.setLongitude(c.getDouble(4));
+                e.setAdress(c.getString(5));
                 result.add(e);
             }
         }
@@ -52,6 +53,7 @@ public class DbBasedDataAccess extends DataAccess {
         cv.put("description", e.getDescription());
         cv.put("latitude", e.getLatitude());
         cv.put("longitude", e.getLongitude());
+        cv.put("adress", e.getAdress());
         long id = database.insert("emp", null, cv);
         e.setId(id);
         return id;
@@ -64,6 +66,7 @@ public class DbBasedDataAccess extends DataAccess {
         cv.put("description", e.getDescription());
         cv.put("latitude", e.getLatitude());
         cv.put("longitude", e.getLongitude());
+        cv.put("adress", e.getAdress());
 
 
         database.update("emp", cv, "_id="+e.getId(), null);
@@ -87,6 +90,7 @@ public class DbBasedDataAccess extends DataAccess {
                 e.setDescription(c.getString(2));
                 e.setLatitude(c.getDouble(3));
                 e.setLongitude(c.getDouble(4));
+                e.setAdress(c.getString(5));
 
 
                 return e;
@@ -98,7 +102,7 @@ public class DbBasedDataAccess extends DataAccess {
     }
 
     public Cursor getbyIdElements(String dbField, String fieldValue){
-        String Query = "Select * from " + "emp" + " where " + dbField + " = " + fieldValue;
+        String Query = "Select * from " + "emp" + " WHERE " + dbField + " = " + "'"+fieldValue+"'";
         Cursor c = database.rawQuery(Query,null);
         return c;
     }

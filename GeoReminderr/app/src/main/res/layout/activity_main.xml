@@ -54,6 +54,12 @@
         android:layout_height="wrap_content"
         android:text="My Coordinates"
         android:textAppearance="?android:attr/textAppearanceSmall"/>
+    <TextView
+        android:id="@+id/appAdress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="My Adress"
+        android:textAppearance="?android:attr/textAppearanceSmall"/>
 
 
 </LinearLayout>
