@@ -2,11 +2,16 @@ package com.yahoo.berniak.georeminderr;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
@@ -14,14 +19,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
 
 public class ReminderDetailsActivity extends Activity {
 
@@ -37,37 +49,33 @@ public class ReminderDetailsActivity extends Activity {
     private TextView descriptionField = null;
     private DataAccess dataAccess;
     private Button buttonTakePhoto = null;
-    private ImageView viewImage = null;
     public static LatLng coordinate = null;
     public static String adress = null;
     private TextView textCooridantes;
     private Button buttonToMap;
     private ImageView viewPhoto;
-
+    private String mode;
+    private ImageView mImageView;
     private Uri photoUri;
     private final static int TAKE_PHOTO = 1;
     private final static String PHOTO_URI = "photoUri";
 
 
 
-    private String mode;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
 
         setContentView(R.layout.activity_reminder_details);
         titleField = (TextView) findViewById(R.id.fieldTitle);
         descriptionField = (TextView) findViewById(R.id.fieldDescription);
         textCooridantes = (TextView) findViewById(R.id.fieldCooridnates);
         buttonToMap = (Button) findViewById(R.id.byttonToMap);
-        viewPhoto = (ImageView) findViewById(R.id.viewImage);
-        viewPhoto.setImageResource(R.mipmap.ic_launcher);
-
+        buttonTakePhoto = (Button) findViewById(R.id.buttonTakePhoto);
+        mImageView = (ImageView) findViewById(R.id.imageView1);
+        mImageView.setImageResource(R.mipmap.ic_launcher);
         dataAccess = DataAccess.create(this);
 
-        buttonTakePhoto = (Button) findViewById(R.id.buttonTakePhoto);
         buttonTakePhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -93,9 +101,6 @@ public class ReminderDetailsActivity extends Activity {
         if (MODE_VIEW.equals(mode)) {
             loadData();
         }
-
-
-
     }
 
     protected void onStart() {
@@ -125,7 +130,6 @@ public class ReminderDetailsActivity extends Activity {
         buttonToMap.setEnabled(enabled);
 
 
-
         if (MODE_NEW.equals(mode)) {
             getActionBar().setTitle(R.string.new_employee);
         }
@@ -148,7 +152,7 @@ public class ReminderDetailsActivity extends Activity {
         return true;
     }
 
-    ;
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -268,4 +272,7 @@ public class ReminderDetailsActivity extends Activity {
             Log.e("ReminderDetailsActivity", "FileNotFound",e);
         }
     }
+
+
+
 }

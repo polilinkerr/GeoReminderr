@@ -28,15 +28,6 @@ import java.util.Random;
  */
 public class CustomArrayAdapter extends CursorAdapter {
 
-    private Geocoder geocoder;
-    private List<Address> addresses = new ArrayList<Address>();
-    private String address;
-    private String city;
-    private String state;
-    private String country;
-    private String postalCode;
-    private String knownName;
-
     public CustomArrayAdapter(Context context, Cursor cursor) {
         super(context, cursor, 0);
     }

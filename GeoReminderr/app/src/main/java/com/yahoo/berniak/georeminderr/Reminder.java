@@ -13,12 +13,13 @@ public class Reminder {
 
 
 
-    Reminder(long id, String title, String description, double latitude, double longitude) {
+    Reminder(long id, String title, String description, double latitude, double longitude, String adress) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.adress = adress;
 
 
 
