@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class ReminderDbOpenHelper extends SQLiteOpenHelper {
     public static final int DB_VERSION = 1;
-    public static final String DB_NAME = "employees";
+    public static final String DB_NAME = "reminders";
 
     public ReminderDbOpenHelper(Context ctx) {
         super(ctx, DB_NAME, null, DB_VERSION);
@@ -22,11 +22,9 @@ public class ReminderDbOpenHelper extends SQLiteOpenHelper {
 
         db.execSQL(sql);
 
-        //sql = "INSERT INTO emp VALUES (null, 'Uczelnia','Rozmowa z Profesorem', '123','3214'); ";
-        //db.execSQL(sql);
-        //sql = "INSERT INTO emp VALUES (null, 'Dom', Zanuck', 41241, 12); ";
-        //db.execSQL(sql);
-        insertReminder(db, "Uczelnia", "Rozmowa z Profesorem", 23.4, 321.32, "Gronostajowa 7, Kraków");
+
+        //insertReminder(db, "Uczelnia", "Rozmowa z Profesorem", 23.4, 34.1, "Gronostajowa 7, Krakow");
+        //insertReminder(db, "Zlozyc wniosek o wymiane dowodu", "Urzad miasta na wielickiej", 50.2, 50.2, "Wielicka 222, Krakow");
     }
     private static void insertReminder(SQLiteDatabase db, String name, String description, double latitude, double longitude, String adress) {
         ContentValues ReminderValue = new ContentValues();
@@ -37,6 +35,12 @@ public class ReminderDbOpenHelper extends SQLiteOpenHelper {
         ReminderValue.put("adress", adress);
         db.insert("emp", null, ReminderValue);
     }
+
+
+
+
+
+
 
 
     @Override
