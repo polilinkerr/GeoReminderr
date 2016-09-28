@@ -10,6 +10,8 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".ReminderDetailsActivity" >
 
+
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -18,60 +20,54 @@
             <EditText
                 android:id="@+id/fieldTitle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+
                 android:hint="Title"
-                >
+                android:layout_weight="1">
             </EditText>
 
             <EditText
                 android:id="@+id/fieldDescription"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Description"/>
+                android:layout_height="0dp"
 
-            <LinearLayout
+                android:hint="Description"
+                android:layout_weight="5"/>
+            <Button
+                android:id="@+id/byttonToMap"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/byttonToMap"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="@string/buttonToMap"
-                    android:onClick="goToMap"
-                    android:layout_weight="1"/>
-
-
-                <Button
-                    android:id="@+id/buttonTakePhoto"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="@string/takePicture"
-                    android:layout_weight="1"
-
-                    />
-
-
-
-            </LinearLayout>
-
-
+                android:layout_height="0dp"
+                android:text="@string/buttonToMap"
+                android:onClick="goToMap"
+                android:layout_weight="1"/>
 
             <TextView
                 android:id="@+id/fieldCooridnates"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:text="@string/location"
-                android:onClick="takePhoto"
-                />
+                android:layout_weight="1"
 
+                />
+            <Button
+                android:id="@+id/buttonTakePhoto"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/takePicture"
+                />
             <ImageView
-                android:id="@+id/imageView1"
-                android:layout_width="wrap_content"
+                android:id="@+id/viewImage"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 />
 
         </LinearLayout>
+
+
+
+
+
+
+
 
 </LinearLayout>

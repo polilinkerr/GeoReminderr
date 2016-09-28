@@ -28,6 +28,4 @@
     <string name="action_turnOfReminder">Turn of Reminderr</string>
     <string name="action_turnOnReminder">Turn On Reminderr</string>
     <string name="takePicture">Zrób Zdjęcie</string>
-    <string name="album_name">Camera Sample</string>
-    <string name="cannot">Can not</string>
 </resources>

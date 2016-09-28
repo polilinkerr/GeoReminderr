@@ -69,13 +69,9 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
     public static final float GEOFENCE_RADIUS_IN_METERS = 1609; // 1 mile, 1.6 km
 
     private static final long GEO_DURATION = 60 * 60 * 1000;
-    //private static final String GEOFENCE_REQ_ID = "My Geofe;nce"
-    private static final float GEOFENCE_RADIUS = 500.0f; // in meters
-    private Location lastLocation;
 
+    private Location lastLocation;
     private LocationRequest locationRequest;
-    // Defined in mili seconds.
-    // This number in extremely low, and should be used only for debug
     private final int UPDATE_INTERVAL = 1000;
     private final int FASTEST_INTERVAL = 900;
     private PendingIntent geoFencePendingIntent;
@@ -123,11 +119,6 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         loadData2();
         loadReferenceGeofence();
         populateGeofenceList();
-
-
-
-        //loadReferenceGeofence();
-
 
     }
 
@@ -273,7 +264,7 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
     public void onLocationChanged(Location location) {
         Log.d(TAG, "onLocationChanged [" + location + "]");
 
-        if(location.distanceTo(lastLocation)>10){
+        if(location.distanceTo(lastLocation)>200){
             lastLocation = location;
             writeActualLocation(location);
         }
