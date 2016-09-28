@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -39,7 +40,7 @@ public class ReminderDetailsActivity extends Activity {
     private Button buttonTakePhoto = null;
     private ImageView viewImage = null;
     public static LatLng coordinate = null;
-    public static String adress = null;
+    public static String adress = "Ulica Pokątna :)";
     private TextView textCooridantes;
     private Button buttonToMap;
     private ImageView viewPhoto;
@@ -82,6 +83,10 @@ public class ReminderDetailsActivity extends Activity {
             photoUri = (Uri) savedInstanceState.get(PHOTO_URI);
 
         }
+
+
+        double[] tempLocation = getIntent().getDoubleArrayExtra("location");
+        coordinate = new LatLng(tempLocation[0],tempLocation[1]);
 
         mode = getIntent().getStringExtra(EXTRA_MODE);
         if (mode == null) {
@@ -172,6 +177,12 @@ public class ReminderDetailsActivity extends Activity {
     }
 
     private void commitClicked() {
+
+        String CheckTitleField = titleField.getText().toString();
+        if (CheckTitleField.matches("")){
+            Toast.makeText(this, "You did not enter title", Toast.LENGTH_SHORT).show();
+            return;
+        }
         Reminder e = new Reminder();
         e.setId(getIntent().getLongExtra(EXTRA_EMPLOYEE_ID, -1));
         e.setTitle(titleField.getText().toString());
@@ -179,7 +190,7 @@ public class ReminderDetailsActivity extends Activity {
         e.setLongitude(coordinate.longitude);
         e.setLatitude(coordinate.latitude);
         ////
-        e.setAdress(adress);
+        e.setAdress(adress.toString());
 
         if (MODE_NEW.equals(mode)) {
 

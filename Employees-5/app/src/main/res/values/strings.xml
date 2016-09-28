@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Employees</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="add_action">Add</string>
+    <string name="title_activity_employee_details">EmployeeDetails</string>
+    <string name="not_available">n/a</string>
+    <string name="new_employee">New employee</string>
+
+</resources>

@@ -148,7 +148,10 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         switch (item.getItemId()) {
             case R.id.action_add:
                 Intent empDetailsIntent = new Intent(this, ReminderDetailsActivity.class);
-                empDetailsIntent.putExtra(ReminderDetailsActivity.EXTRA_MODE, ReminderDetailsActivity.MODE_NEW);
+
+                empDetailsIntent.putExtra(ReminderDetailsActivity.EXTRA_MODE,ReminderDetailsActivity.MODE_NEW);
+                double[] locationArray = {lastLocation.getLatitude(),lastLocation.getLongitude()};
+                empDetailsIntent.putExtra("location", locationArray );
 
                 startActivityForResult(empDetailsIntent, 101);
                 return true;
@@ -179,9 +182,13 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
 
         Reminder emp = data.get(position);
 
+        double[] tmpArray = {0,0};
+
         Intent empDetailsIntent = new Intent(this, ReminderDetailsActivity.class);
+
         empDetailsIntent.putExtra(ReminderDetailsActivity.EXTRA_EMPLOYEE_ID, emp.getId());
         empDetailsIntent.putExtra(ReminderDetailsActivity.EXTRA_MODE, ReminderDetailsActivity.MODE_VIEW);
+        empDetailsIntent.putExtra("location",  tmpArray);
 
         startActivity(empDetailsIntent);
     }
@@ -587,17 +594,20 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         geocoder = new Geocoder(this, Locale.getDefault());
 
         try {
-            addresses = geocoder.getFromLocation(latitude, longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+            addresses = geocoder.getFromLocation(latitude, longitude, 1);// Here 1 represent max location result to returned, by documents it recommended 1 to 5
+
+            address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+            city = addresses.get(0).getLocality();
+            state = addresses.get(0).getAdminArea();
+            country = addresses.get(0).getCountryName();
+            postalCode = addresses.get(0).getPostalCode();
+            knownName = addresses.get(0).getFeatureName();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-        city = addresses.get(0).getLocality();
-        state = addresses.get(0).getAdminArea();
-        country = addresses.get(0).getCountryName();
-        postalCode = addresses.get(0).getPostalCode();
-        knownName = addresses.get(0).getFeatureName();
+
 
     }
 
