@@ -10,16 +10,19 @@ public class Reminder {
     private double latitude;
     private double longitude;
     private String adress;
+    private String uriToPhoto;
 
 
 
-    Reminder(long id, String title, String description, double latitude, double longitude, String adress) {
+    Reminder(long id, String title, String description, double latitude, double longitude, String adress, String uriToPhoto) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.latitude = latitude;
         this.longitude = longitude;
         this.adress = adress;
+        this.uriToPhoto = uriToPhoto;
+
 
 
 
@@ -79,5 +82,13 @@ public class Reminder {
     @Override
     public String toString() {
         return title + " " + description + " ("  + ")";
+    }
+
+    public String getUriToPhoto() {
+        return uriToPhoto;
+    }
+
+    public void setUriToPhoto(String uriToPhoto) {
+        this.uriToPhoto = uriToPhoto;
     }
 }

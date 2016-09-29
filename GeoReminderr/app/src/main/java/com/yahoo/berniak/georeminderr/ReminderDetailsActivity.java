@@ -126,6 +126,22 @@ public class ReminderDetailsActivity extends Activity {
             adress = e.getAdress();
             coordinate = new LatLng(e.getLatitude(),e.getLongitude());
 
+            //TU DODAC KOD
+
+            if (e.getUriToPhoto() !=null){
+                photoUri = Uri.parse(e.getUriToPhoto());
+                try{
+                    InputStream inputStream = getContentResolver().openInputStream(photoUri);
+                    mImageBitmap = BitmapFactory.decodeStream(inputStream);
+                    viewPhoto.setImageBitmap(mImageBitmap);
+                }catch (FileNotFoundException f){
+                    Log.e("ReminderDetailsActivity", "FileNotFound",f);
+                }
+            }else{
+                viewPhoto.setImageResource(R.mipmap.ic_launcher);
+
+            }
+
             getActionBar().setTitle(e.getTitle());
         }
     }
@@ -200,6 +216,12 @@ public class ReminderDetailsActivity extends Activity {
         e.setLatitude(coordinate.latitude);
         ////
         e.setAdress(adress.toString());
+        if(photoUri != null) {
+            e.setUriToPhoto(photoUri.toString());
+        }else{
+            e.setUriToPhoto(null);
+        }
+
 
         if (MODE_NEW.equals(mode)) {
 

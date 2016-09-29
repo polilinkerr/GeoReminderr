@@ -36,6 +36,7 @@ public class DbBasedDataAccess extends DataAccess {
                 e.setLatitude(c.getDouble(3));
                 e.setLongitude(c.getDouble(4));
                 e.setAdress(c.getString(5));
+                e.setUriToPhoto(c.getString(6));
                 result.add(e);
             }
         }
@@ -54,6 +55,7 @@ public class DbBasedDataAccess extends DataAccess {
         cv.put("latitude", e.getLatitude());
         cv.put("longitude", e.getLongitude());
         cv.put("adress", e.getAdress());
+        cv.put("uriToPhoto", e.getUriToPhoto());
         long id = database.insert("emp", null, cv);
         e.setId(id);
         return id;
@@ -67,6 +69,7 @@ public class DbBasedDataAccess extends DataAccess {
         cv.put("latitude", e.getLatitude());
         cv.put("longitude", e.getLongitude());
         cv.put("adress", e.getAdress());
+        cv.put("uriToPhoto", e.getUriToPhoto());
 
 
         database.update("emp", cv, "_id="+e.getId(), null);
@@ -91,6 +94,7 @@ public class DbBasedDataAccess extends DataAccess {
                 e.setLatitude(c.getDouble(3));
                 e.setLongitude(c.getDouble(4));
                 e.setAdress(c.getString(5));
+                e.setUriToPhoto(c.getString(6));
 
 
                 return e;
