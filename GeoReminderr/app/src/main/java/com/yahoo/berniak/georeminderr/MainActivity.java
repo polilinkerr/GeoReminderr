@@ -151,7 +151,7 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
 
                 empDetailsIntent.putExtra(ReminderDetailsActivity.EXTRA_MODE,ReminderDetailsActivity.MODE_NEW);
                 double[] locationArray = {lastLocation.getLatitude(),lastLocation.getLongitude()};
-                empDetailsIntent.putExtra("location", locationArray );
+                //empDetailsIntent.putExtra("location", locationArray );
 
                 startActivityForResult(empDetailsIntent, 101);
                 return true;
@@ -188,7 +188,7 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
 
         empDetailsIntent.putExtra(ReminderDetailsActivity.EXTRA_EMPLOYEE_ID, emp.getId());
         empDetailsIntent.putExtra(ReminderDetailsActivity.EXTRA_MODE, ReminderDetailsActivity.MODE_VIEW);
-        empDetailsIntent.putExtra("location",  tmpArray);
+        //empDetailsIntent.putExtra("location",  tmpArray);
 
         startActivity(empDetailsIntent);
     }

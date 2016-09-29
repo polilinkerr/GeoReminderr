@@ -33,6 +33,8 @@ public class ReminderDetailsActivity extends Activity {
     public static final String MODE_NEW = "new";
     public static final String MODE_VIEW = "view";
     public static final String MODE_EDIT = "edit";
+    private static final String BITMAP_STORAGE_KEY = "viewbitmap";
+
 
     private TextView titleField = null;
     private TextView descriptionField = null;
@@ -48,6 +50,8 @@ public class ReminderDetailsActivity extends Activity {
     private Uri photoUri;
     private final static int TAKE_PHOTO = 1;
     private final static String PHOTO_URI = "photoUri";
+
+    private Bitmap mImageBitmap;
 
 
 
@@ -76,24 +80,21 @@ public class ReminderDetailsActivity extends Activity {
                 photoUri = getContentResolver().insert(EXTERNAL_CONTENT_URI, new ContentValues());
                 intent.putExtra(MediaStore.EXTRA_OUTPUT,photoUri);
                 startActivityForResult(intent, TAKE_PHOTO);
+                Log.v("Uri", photoUri.toString());
             }
         });
 
-        if (savedInstanceState != null){
-            photoUri = (Uri) savedInstanceState.get(PHOTO_URI);
-
-        }
 
 
-        double[] tempLocation = getIntent().getDoubleArrayExtra("location");
-        coordinate = new LatLng(tempLocation[0],tempLocation[1]);
+
+        //double[] tempLocation = getIntent().getDoubleArrayExtra("location");
+        //coordinate = new LatLng(tempLocation[0],tempLocation[1]);
 
         mode = getIntent().getStringExtra(EXTRA_MODE);
         if (mode == null) {
             mode = MODE_VIEW;
 
         }
-
         prepareMode();
         if (MODE_VIEW.equals(mode)) {
             loadData();
@@ -105,8 +106,13 @@ public class ReminderDetailsActivity extends Activity {
 
     protected void onStart() {
         super.onStart();
-        if (!(coordinate == null)) {
-            textCooridantes.setText("Location: " + HelpCalculation.round(coordinate.latitude,2) + " " + HelpCalculation.round(coordinate.longitude,2)+" adress:"+adress)      ;
+
+        if(MODE_VIEW.equals(mode)){
+            return;
+        }else {
+            if (!(coordinate == null)) {//
+                textCooridantes.setText("Location: " + HelpCalculation.round(coordinate.latitude, 2) + " " + HelpCalculation.round(coordinate.longitude, 2) + " adress:" + adress);
+            }
         }
     }
 
@@ -117,6 +123,8 @@ public class ReminderDetailsActivity extends Activity {
             descriptionField.setText(e.getDescription());
             changeCoordinate(e.getLatitude(), e.getLongitude());
             textCooridantes.setText("Location: " + HelpCalculation.round(e.getLatitude(),4) + " " + HelpCalculation.round(e.getLongitude(),4)+e.getAdress());
+            adress = e.getAdress();
+            coordinate = new LatLng(e.getLatitude(),e.getLongitude());
 
             getActionBar().setTitle(e.getTitle());
         }
@@ -128,6 +136,7 @@ public class ReminderDetailsActivity extends Activity {
         titleField.setEnabled(enabled);
         descriptionField.setEnabled(enabled);
         buttonToMap.setEnabled(enabled);
+        buttonTakePhoto.setEnabled(enabled);
 
 
 
@@ -267,16 +276,41 @@ public class ReminderDetailsActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode != Activity.RESULT_OK || requestCode != TAKE_PHOTO ){
+        if(resultCode != Activity.RESULT_OK || requestCode != TAKE_PHOTO ){
+            Log.v("OnActivityResults", "warunek przyjmuje wartosc false");
             return;
         }
 
         try{
             InputStream inputStream = getContentResolver().openInputStream(photoUri);
-            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-            viewPhoto.setImageBitmap(bitmap);
+            mImageBitmap = BitmapFactory.decodeStream(inputStream);
+            viewPhoto.setImageBitmap(mImageBitmap);
         }catch (FileNotFoundException e){
             Log.e("ReminderDetailsActivity", "FileNotFound",e);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable(BITMAP_STORAGE_KEY, mImageBitmap);
+
+        super.onSaveInstanceState(outState);
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mImageBitmap = savedInstanceState.getParcelable(BITMAP_STORAGE_KEY);
+        viewPhoto.setImageBitmap(mImageBitmap);
+        loadData();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+
     }
 }
