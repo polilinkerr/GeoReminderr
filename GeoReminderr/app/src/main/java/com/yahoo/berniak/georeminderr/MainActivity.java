@@ -327,7 +327,7 @@ public class MainActivity extends ListActivity implements GoogleApiClient.Connec
         }
     }
 
-    // App cannot work without the permissions
+    // App cannot work without the permission
     private void permissionsDenied() {
         Log.w(TAG, "permissionsDenied()");
     }
