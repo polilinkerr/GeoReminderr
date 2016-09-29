@@ -22,10 +22,6 @@ public class Reminder {
         this.longitude = longitude;
         this.adress = adress;
         this.uriToPhoto = uriToPhoto;
-
-
-
-
     }
 
     public long getId() {

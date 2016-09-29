@@ -19,29 +19,9 @@ public class ReminderDbOpenHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String sql = "CREATE TABLE emp (_id INTEGER PRIMARY KEY,title TEXT, description TEXT,latitude REAL, longitude REAL,adress TEXT, uriToPhoto TEXT); ";
-
         db.execSQL(sql);
 
-
-        //insertReminder(db, "Uczelnia", "Rozmowa z Profesorem", 23.4, 34.1, "Gronostajowa 7, Krakow");
-        //insertReminder(db, "Zlozyc wniosek o wymiane dowodu", "Urzad miasta na wielickiej", 50.2, 50.2, "Wielicka 222, Krakow");
     }
-    private static void insertReminder(SQLiteDatabase db, String name, String description, double latitude, double longitude, String adress) {
-        ContentValues ReminderValue = new ContentValues();
-        ReminderValue.put("title", name);
-        ReminderValue.put("description", description);
-        ReminderValue.put("latitude", latitude);
-    ReminderValue.put("longitude", longitude);
-    ReminderValue.put("adress", adress);
-    db.insert("emp", null, ReminderValue);
-}
-
-
-
-
-
-
-
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

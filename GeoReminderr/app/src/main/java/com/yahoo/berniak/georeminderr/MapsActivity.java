@@ -58,7 +58,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private LatLng CurrentLocation = null;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,18 +77,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 coordinates = new LatLng(tmpLatitude.doubleValue(), tmpLongitude);
                 locationToAdress(coordinates.latitude,coordinates.longitude);
                 mTapTextView.setText("adress:"+address+", city:"+city+", country:"+country);
-
-
-
             }
-
-
-
         }
 
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-
 
     }
 
@@ -116,10 +107,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.animateCamera(yourLocation);
 
             CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target( new LatLng(location.getLatitude(), location.getLongitude()))
-                    .zoom(14)
-                    .bearing(90)
-                    .tilt(40)
+                    .target( new LatLng(location.getLatitude(), location.getLongitude()))  //ustaw widok na moja lokalizacje
+                    .zoom(14)                                                                  // zoom
+                    .bearing(0)                                                               // ustawienie kamery
+                    .tilt(40)                                                                  // nachylenie
                     .build();
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
@@ -128,8 +119,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             markerForGeofence(coordinates);
 
         }
-
-
     }
 
 
